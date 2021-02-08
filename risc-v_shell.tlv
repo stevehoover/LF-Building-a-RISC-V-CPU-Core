@@ -1,6 +1,6 @@
 \m4_TLV_version 1d: tl-x.org
 \SV
-   // This code can be found in: https://github.com/stevehoover/RISC-V_MYTH_Workshop
+   // This code can be found in: https://github.com/stevehoover/LF-Building-a-RISC-V-CPU-Core/risc-v_shell.tlv
    
    m4_include_lib(['https://raw.githubusercontent.com/stevehoover/LF-Building-a-RISC-V-CPU-Core/lib/risc-v_shell_lib.tlv'])
 
