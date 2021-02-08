@@ -1,6 +1,6 @@
 # Building a RISC-V CPU Core
 
-Accompanying resources for the [Building a RISC-V CPU Core](https://courses.edx.org/TBD) [EdX])(https://edx.org/) course by [Steve Hoover](https://www.linkedin.com/in/steve-hoover-a44b607/) of [Redwood EDA](https://redwoodeda.com), [Linux Foundation](https://www.linuxfoundation.org/), and [RISC-V International](https://riscv.org).
+Accompanying resources for the [Building a RISC-V CPU Core](https://courses.edx.org/TBD) [EdX](https://edx.org/) course by [Steve Hoover](https://www.linkedin.com/in/steve-hoover-a44b607/) of [Redwood EDA](https://redwoodeda.com), [Linux Foundation](https://www.linuxfoundation.org/), and [RISC-V International](https://riscv.org).
 
 ## RISC-V Starting-Point Code
 
