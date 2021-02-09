@@ -42,18 +42,13 @@
    m4_define_hier(['M4_IMEM'], M4_NUM_INSTRS)
    m4+fill_imem()
 
-   |cpu
-      @0
-         $reset = *reset;
+   $reset = *reset;
+   // YOUR CODE HERE
+   // ...
 
-
-
-      // YOUR CODE HERE
-      // ...
-
-      // Note: Because of the magic we are using for visualisation, if visualisation is enabled below,
-      //       be sure to avoid having unassigned signals (which you might be using for random inputs)
-      //       other than those specifically expected in the labs. You'll get strange errors for these.
+   // Note: Because of the magic we are using for visualisation, if visualisation is enabled below,
+   //       be sure to avoid having unassigned signals (which you might be using for random inputs)
+   //       other than those specifically expected in the labs. You'll get strange errors for these.
 
    
    // Assert these to end simulation (before Makerchip cycle limit).
@@ -65,11 +60,10 @@
    //  o register file
    //  o data memory
    //  o CPU visualization
-   |cpu
-      m4+rf(entries, width, $reset, $port1_en, $port1_index, $port1_data, $port2_en, $port2_index, $$port2_data, $port3_en, $port3_index, $$port3_data)
-      m4+dmem(entries, width, $reset, $port1_en, $port1_index, $port1_data, $port2_en, $port2_index, $$port2_data)
    
-   //m4+cpu_viz(@4)    // For visualisation, argument should be at least equal to the last stage of CPU logic
-                       // @4 would work for all labs
+   //m4+rf(entries, width, $reset, $port1_en, $port1_index, $port1_data, $port2_en, $port2_index, $$port2_data, $port3_en, $port3_index, $$port3_data)
+   //m4+dmem(entries, width, $reset, $port1_en, $port1_index, $port1_data, $port2_en, $port2_index, $$port2_data)
+   
+   //m4+cpu_viz()    // For visualisation, argument should be at least equal to the last stage of CPU logic
 \SV
    endmodule
