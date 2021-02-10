@@ -180,7 +180,7 @@ m4+definitions(['
             let rf_rd_index1  =   siggen_rf_dmem("rf_rd_index1")
             let rf_rd_en2     =   siggen_rf_dmem("rf_rd_en2")
             let rf_rd_index2  =   siggen_rf_dmem("rf_rd_index2")
-            let rf_wr_en      =   siggen_rf_dmem("rf_wr_en"
+            let rf_wr_en      =   siggen_rf_dmem("rf_wr_en")
             let rf_wr_index   =   siggen_rf_dmem("rf_wr_index")
             let rf_wr_data    =   siggen_rf_dmem("rf_wr_data")
             let dmem_rd_en    =   siggen_rf_dmem("dmem_rd_en")
