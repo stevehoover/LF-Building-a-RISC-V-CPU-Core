@@ -2,6 +2,7 @@
 \SV
    // This code can be found in: https://github.com/stevehoover/LF-Building-a-RISC-V-CPU-Core/risc-v_shell.tlv
    
+   m4_include_lib(['https://raw.githubusercontent.com/stevehoover/warp-v_includes/2d6d36baa4d2bc62321f982f78c8fe1456641a43/risc-v_defs.tlv'])
    m4_include_lib(['https://raw.githubusercontent.com/stevehoover/LF-Building-a-RISC-V-CPU-Core/main/lib/risc-v_shell_lib.tlv'])
 
 \SV
@@ -36,21 +37,23 @@
    m4_asm(ORI, r6, r0, 0)
    m4_asm(SW, r6, r1, 0)
    m4_asm(LW, r4, r6, 0)
-   
    // Optional:
    m4_asm(JAL, r7, 11111111111111101000) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
-   m4_define_hier(['M4_IMEM'], M4_NUM_INSTRS)
-   m4+fill_imem()
+   m4_asm_end()
+   
+
+
+   // /=====\
+   // | CPU |
+   // \=====/
 
    $reset = *reset;
+
    // YOUR CODE HERE
    // ...
 
-   // Note: Because of the magic we are using for visualisation, if visualisation is enabled below,
-   //       be sure to avoid having unassigned signals (which you might be using for random inputs)
-   //       other than those specifically expected in the labs. You'll get strange errors for these.
-
    
+
    // Assert these to end simulation (before Makerchip cycle limit).
    *passed = *cyc_cnt > 40;
    *failed = 1'b0;
@@ -64,6 +67,6 @@
    //m4+rf(entries, width, $reset, $port1_en, $port1_index, $port1_data, $port2_en, $port2_index, $$port2_data, $port3_en, $port3_index, $$port3_data)
    //m4+dmem(entries, width, $reset, $port1_en, $port1_index, $port1_data, $port2_en, $port2_index, $$port2_data)
    
-   //m4+cpu_viz()    // For visualisation, argument should be at least equal to the last stage of CPU logic
+   m4+cpu_viz()
 \SV
    endmodule
