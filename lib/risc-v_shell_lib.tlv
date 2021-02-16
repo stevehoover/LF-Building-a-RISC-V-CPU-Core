@@ -15,7 +15,17 @@ m4+definitions(['
    
    // A single-line M4 macro instantiated at the end of the asm code.
    // It actually produces a definition of an SV macro that instantiates the IMem conaining the program (that can be parsed without \SV_plus). 
-   m4_define(['m4_asm_end'], ['`define READONLY_MEM(ADDR, DATA) assign DATA \= instrs[ADDR[\$clog2(\$size(instrs)) + 1 : 2]]; logic [31:0] instrs [0:M4_NUM_INSTRS-1]; assign instrs \= '{m4_instr0['']m4_forloop(['m4_instr_ind'], 1, M4_NUM_INSTRS, [', m4_echo(['m4_instr']m4_instr_ind)'])};'])
+   m4_define(['m4_asm_end'], ['`define READONLY_MEM(ADDR, DATA) logic [31:0] instrs [0:M4_NUM_INSTRS-1]; assign DATA \= instrs[ADDR[\$clog2(\$size(instrs)) + 1 : 2]]; assign instrs \= '{m4_instr0['']m4_forloop(['m4_instr_ind'], 1, M4_NUM_INSTRS, [', m4_echo(['m4_instr']m4_instr_ind)'])};'])
+
+   m4_define(['m4_lab'], 0)
+   m4_define(['m4_define_labs'], ['
+      m4_define(['M4_$1_LAB'], m4_lab)
+      m4_define(['m4_lab'], m4_eval(m4_lab + 1))
+      m4_ifelse(['$1'], [''], [''], ['m4_define_labs(m4_shift($@))'])
+   '])
+   m4_define_labs(START, PC, IMEM, INSTR_TYPE, FIELDS, IMM, SUBSET_INSTRS, RF_MACRO, RF_READ, SUBSET_ALU, RF_WRITE, TAKEN_BR, BR_REDIR, TB,
+                  TEST_PROG, ALL_INSTRS, FULL_ALU, JUMP, LD_ST_ADDR, DMEM, LD_DATA, DONE)
+   m4_define(['m4_reached'], ['m4_eval(M4_LAB >= M4_$1_LAB), 1'])
 '])
 
 
@@ -40,7 +50,7 @@ m4+definitions(['
    $_port2_data[_width-1:0]  =  $rf1_rd_en1 ? /xreg[$rf1_rd_index1]$value : 'X;
    $_port3_data[_width-1:0]  =  $rf1_rd_en2 ? /xreg[$rf1_rd_index2]$value : 'X;
    
-   /xreg[31:0]
+   /xreg[m4_eval(_entries-1):0]
       \viz_alpha
          initEach: function() {
             return {}  // {objects: {reg: reg}};
@@ -60,18 +70,17 @@ m4+definitions(['
                      (rf_rd_en2.asBool(false) && rf_rd_index2.asInt() == this.getIndex())
             
             let mod = wr.asBool(false);
-            let wr_color = mod && rf_wr_index.asInt() == this.getIndex()
             let reg = parseInt(this.getIndex())
             let regIdent = reg.toString().padEnd(2, " ")
             let newValStr = (regIdent + ": ").padEnd(14, " ")
-            let reg_str = new fabric.Text((regIdent + ": " + value.asInt(NaN).toString()).padEnd(14, " "), {
+            let reg_str = new fabric.Text((regIdent + ": " + value.asInt(NaN).toString(M4_VIZ_BASE)).padEnd(14, " "), {
                top: 18 * this.getIndex() - 40,
                left: 316,
                fontSize: 14,
                fill: mod ? "blue" : "black",
                fontWeight: mod ? 800 : 400,
                fontFamily: "monospace",
-               textBackgroundColor: rd ? "#b0ffff" : wr_color ? "#ffef87" : "white"
+               textBackgroundColor: rd ? "#b0ffff" : mod ? "#f0f0f0" : "white"
             })
             if (mod) {
                setTimeout(() => {
@@ -116,18 +125,17 @@ m4+definitions(['
             //
             let rd = dmem_rd_en.asBool() && dmem_rd_index.asInt() == this.getIndex();
             let mod = wr.asBool(false);
-            let wr_color = mod && dmem_wr_index.asInt() == this.getIndex();
             let reg = parseInt(this.getIndex());
             let regIdent = reg.toString().padEnd(2, " ");
             let newValStr = (regIdent + ": ").padEnd(14, " ");
-            let dmem_str = new fabric.Text((regIdent + ": " + value.asInt(NaN).toString()).padEnd(14, " "), {
+            let dmem_str = new fabric.Text((regIdent + ": " + value.asInt(NaN).toString(M4_VIZ_BASE)).padEnd(14, " "), {
                top: 18 * this.getIndex() - 40,
                left: 480,
                fontSize: 14,
                fill: mod ? "blue" : "black",
                fontWeight: mod ? 800 : 400,
                fontFamily: "monospace",
-               textBackgroundColor: rd ? "#b0ffff" : wr_color ? "#d0e8ff" : "white"
+               textBackgroundColor: rd ? "#b0ffff" : mod ? "#d0e8ff" : "white"
             })
             if (mod) {
                setTimeout(() => {
@@ -150,9 +158,10 @@ m4+definitions(['
    
    /cpuviz
       \viz_alpha
+         m4_define(['M4_IMEM_TOP'], ['m4_ifelse(m4_eval(M4_NUM_INSTRS > 16), 0, 0, m4_eval(0 - (M4_NUM_INSTRS - 16) * 18))'])
          initEach() {
             let imem_box = new fabric.Rect({
-                  top: -50,
+                  top: M4_IMEM_TOP - 50,
                   left: -700,
                   fill: "#208028",
                   width: 665,
@@ -188,7 +197,7 @@ m4+definitions(['
                   visible: false
                })
             let imem_header = new fabric.Text("🗃️ IMem", {
-                  top: -35,
+                  top: M4_IMEM_TOP - 35,
                   left: -460,
                   fontSize: 18,
                   fontWeight: 800,
@@ -224,6 +233,12 @@ m4+definitions(['
                   visible: false
                })
             
+            let passed = new fabric.Text("", {
+                  top: 300,
+                  left: -30,
+                  fontSize: 46,
+                  fontWeight: 800
+               })
             let missing_col1 = new fabric.Text("", {
                   top: 420,
                   left: -480,
@@ -241,7 +256,7 @@ m4+definitions(['
                   fill: "purple"
                })
             let missing_sigs = new fabric.Group(
-               [new fabric.Text("🚨 Remaining Signals for Course", {
+               [new fabric.Text("🚨 To Be Implemented:", {
                   top: 350,
                   left: -466,
                   fontSize: 18,
@@ -263,7 +278,7 @@ m4+definitions(['
               {visible: false}
             )
             return {missing_col1, missing_col2,
-                    objects: {imem_box, decode_box, rf_box, dmem_box, imem_header, decode_header, rf_header, dmem_header, missing_sigs}};
+                    objects: {imem_box, decode_box, rf_box, dmem_box, imem_header, decode_header, rf_header, dmem_header, passed, missing_sigs}};
          },
          renderEach() {
             // Strings (2 columns) of missing signals.
@@ -274,9 +289,11 @@ m4+definitions(['
             siggen = (name, full_name, expected = true) => {
                var sig = this.svSigRef(full_name ? full_name : `L0_${name}_a0`)
                if (sig == null) {
-                  missing_list[missing_cnt > 11 ? 1 : 0] += `◾ $${name}      \n`;
                   sig         = sticky_zero;
-                  missing_cnt++
+                  if (expected) {
+                     missing_list[missing_cnt > 11 ? 1 : 0] += `◾ $${name}      \n`;
+                     missing_cnt++
+                  }
                }
                return sig
             }
@@ -287,7 +304,7 @@ m4+definitions(['
             
             // Determine which is_xxx signal is asserted.
             siggen_mnemonic = () => {
-               let instrs = ["lui", "auipc", "jal", "jalr", "beq", "bne", "blt", "bge", "bltu", "bgeu", "lb", "lh", "lw", "lbu", "lhu", "sb", "sh", "sw", "addi", "slti", "sltiu", "xori", "ori", "andi", "slli", "srli", "srai", "add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and", "csrrw", "csrrs", "csrrc", "csrrwi", "csrrsi", "csrrci", "load", "store"];
+               let instrs = ["lui", "auipc", "jal", "jalr", "beq", "bne", "blt", "bge", "bltu", "bgeu", "lb", "lh", "lw", "lbu", "lhu", "sb", "sh", "sw", "addi", "slti", "sltiu", "xori", "ori", "andi", "slli", "srli", "srai", "add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and", "csrrw", "csrrs", "csrrc", "csrrwi", "csrrsi", "csrrci", "load", "s_instr"];
                for(i=0;i<instrs.length;i++) {
                   var sig = this.svSigRef(`L0_is_${instrs[i]}_a0`)
                   if(sig != null && sig.asBool()) {
@@ -297,7 +314,6 @@ m4+definitions(['
                return "ILLEGAL"
             }
             
-            //let example       =   siggen("error_eg")
             let pc            =   siggen("pc")
             let instr         =   siggen("instr")
             let types = {I: siggen("is_i_instr"),
@@ -318,7 +334,10 @@ m4+definitions(['
             let rs2           =   siggen("rs2")
             let rs1_valid     =   siggen("rs1_valid")
             let rs2_valid     =   siggen("rs2_valid")
+            let ld_data       =   siggen("ld_data")
             let mnemonic      =   siggen_mnemonic()
+            let dummy         =   siggen("dummy")
+            let passed        =   siggen("passed_cond", false, false)
             
             let rf_rd_en1     =   siggen_rf_dmem("rf1_rd_en1")
             let rf_rd_index1  =   siggen_rf_dmem("rf1_rd_index1")
@@ -339,14 +358,14 @@ m4+definitions(['
                this.getInitObjects().decode_header.setVisible(true)
             }
             let pcPointer = new fabric.Text("👉", {
-               top: 18 * (pc.asInt() / 4),
+               top: M4_IMEM_TOP + 18 * (pc.asInt() / 4),
                left: -375,
                fill: "blue",
                fontSize: 14,
                fontFamily: "monospace",
                visible: pc != sticky_zero
             })
-            let pc_arrow = new fabric.Line([-57, 18 * (pc.asInt() / 4) + 6, 6, 35], {
+            let pc_arrow = new fabric.Line([-57, M4_IMEM_TOP + 18 * (pc.asInt() / 4) + 6, 6, 35], {
                stroke: "#b0c8df",
                strokeWidth: 2,
                visible: instr != sticky_zero
@@ -354,7 +373,6 @@ m4+definitions(['
             
             // Display instruction type(s)
             let type_texts = []
-            /* WAITING FOR A MAKERCHIP UPDATE.
             for (const [type, sig] of Object.entries(types)) {
                if (sig.asBool()) {
                   type_texts.push(
@@ -367,7 +385,7 @@ m4+definitions(['
                      })
                   )
                }
-            }*/
+            }
             let rs1_arrow = new fabric.Line([330, 18 * rf_rd_index1.asInt() + 6 - 40, 190, 75 + 18 * 2], {
                stroke: "#b0c8df",
                strokeWidth: 2,
@@ -434,7 +452,7 @@ m4+definitions(['
             
             let fetch_instr_str = siggen(`instr_strs(${pc.asInt() >> 2})`, `instr_strs(${pc.asInt() >> 2})`).asString("(?) UNKNOWN fetch instr").substr(4)
             let fetch_instr_viz = new fabric.Text(fetch_instr_str, {
-               top: 18 * (pc.asInt() >> 2),
+               top: M4_IMEM_TOP + 18 * (pc.asInt() >> 2),
                left: -352 + 8 * 4,
                fill: "black",
                fontSize: 14,
@@ -448,7 +466,7 @@ m4+definitions(['
             
             // Animate RF value read/write.
             
-            let src1_value_viz = new fabric.Text(src1_value.asInt(0).toString(), {
+            let src1_value_viz = new fabric.Text(src1_value.asInt(0).toString(M4_VIZ_BASE), {
                left: 316 + 8 * 4,
                top: 18 * rs1.asInt(0) - 40,
                fill: "blue",
@@ -461,7 +479,7 @@ m4+definitions(['
                  onChange: this.global.canvas.renderAll.bind(this.global.canvas),
                  duration: 500
             })}, 500)
-            let src2_value_viz = new fabric.Text(src2_value.asInt(0).toString(), {
+            let src2_value_viz = new fabric.Text(src2_value.asInt(0).toString(M4_VIZ_BASE), {
                left: 316 + 8 * 4,
                top: 18 * rs2.asInt(0) - 40,
                fill: "blue",
@@ -475,7 +493,7 @@ m4+definitions(['
                  duration: 500
             })}, 500)
             
-            let load_viz = new fabric.Text(rf_wr_data.asInt(0).toString(), {
+            let load_viz = new fabric.Text(ld_data.asInt(0).toString(M4_VIZ_BASE), {
                left: 470,
                top: 18 * dmem_rd_index.asInt() + 6 - 40,
                fill: "blue",
@@ -497,7 +515,7 @@ m4+definitions(['
                }, 500)
             }
             
-            let store_viz = new fabric.Text(src2_value.asInt(0).toString(), {
+            let store_viz = new fabric.Text(src2_value.asInt(0).toString(M4_VIZ_BASE), {
                left: 166,
                top: 70 + 18 * 3,
                fill: "blue",
@@ -516,7 +534,7 @@ m4+definitions(['
                }, 1000)
             }
             
-            let result_shadow = new fabric.Text(result.asInt(0).toString(), {
+            let result_shadow = new fabric.Text(result.asInt(0).toString(M4_VIZ_BASE), {
                left: 146,
                top: 70,
                fill: "#b0b0df",
@@ -525,7 +543,7 @@ m4+definitions(['
                fontWeight: 800,
                visible: false
             })
-            let result_viz = new fabric.Text(rf_wr_data.asInt(0).toString(), {
+            let result_viz = new fabric.Text(rf_wr_data.asInt(0).toString(M4_VIZ_BASE), {
                left: 146,
                top: 70,
                fill: "blue",
@@ -536,9 +554,9 @@ m4+definitions(['
             })
             if (rd_valid.asBool()) {
                setTimeout(() => {
-                  result_viz.setVisible(rf_wr_data != sticky_zero)
+                  result_viz.setVisible(rf_wr_data != sticky_zero && rf_wr_en.asBool())
                   result_shadow.setVisible(result != sticky_zero)
-                  result_viz.animate({left: 317 + 8 * 4, top: 18 * rd.asInt(0) - 40}, {
+                  result_viz.animate({left: 317 + 8 * 4, top: 18 * rf_wr_index.asInt(0) - 40}, {
                     onChange: this.global.canvas.renderAll.bind(this.global.canvas),
                     duration: 500
                   })
@@ -547,6 +565,22 @@ m4+definitions(['
             
             // Lab completion
             
+            // Passed?
+            this.getInitObject("passed").setVisible(false)
+            if (passed) {
+              if (passed.step(-1).asBool()) {
+                this.getInitObject("passed").set({visible: true, text:"Passed !!!", fill: "green"})
+              } else {
+                // Using an unstable API, so:
+                try {
+                  passed.goTo(passed.sikkkgnal.waveData.endCycle - 1)
+                  if (passed.asBool()) {
+                     this.getInitObject("passed").set({text:"Sim Passes", visible: true, fill: "lightgray"})
+                  }
+                } catch(e) {
+                }
+              }
+            }
             
             // Missing signals
             if (missing_list[0]) {
@@ -561,14 +595,14 @@ m4+definitions(['
          \viz_alpha
             initEach() {
               let binary = new fabric.Text("", {
-                 top: 18 * this.getIndex(),
+                 top: M4_IMEM_TOP + 18 * this.getIndex(),
                  left: -680,
                  fontSize: 14,
                  fontFamily: "monospace",
                  
               })
               let disassembled = new fabric.Text("", {
-                 top: 18 * this.getIndex(),
+                 top: M4_IMEM_TOP + 18 * this.getIndex(),
                  left: -350,
                  fontSize: 14,
                  fontFamily: "monospace"
@@ -588,7 +622,7 @@ m4+definitions(['
                   
                   let instr = this.svSigRef(`instrs(${this.getIndex()})`)
                   if (instr) {
-                     let binary_str = instr.asBinaryStr(NaN)
+                     let binary_str = instr.asBinaryStr("")
                      this.getInitObject("binary").setText(binary_str)
                   }
                   let disassembled = this.svSigRef(`instr_strs(${this.getIndex()})`)
@@ -602,15 +636,79 @@ m4+definitions(['
                this.getInitObject("binary")      .set({textBackgroundColor: rd_viz ? "#b0ffff" : "white"})
             }
       
+\TLV tb()
+   $passed_cond = (/xreg[30]$value == 32'b1) &&
+                  (! $reset && $next_pc[31:0] == $pc[31:0]);
+   *passed = >>2$passed_cond;
 
+\TLV test_prog()
+   // /=======================\
+   // | Test each instruction |
+   // \=======================/
+   //
+   // Some constant values to use as operands.
+   m4_asm(ADDI, r1, r0, 10101)           // An operand value of 21.
+   m4_asm(ADDI, r2, r0, 111)             // An operand value of 7.
+   m4_asm(XORI, r3, r0, 111111111100)    // An operand value of -4.
+   // Execute one of each instruction, XORing subtracting (via ADDI) the expected value.
+   m4_asm(ANDI, r5, r1, 1011100)
+     m4_asm(XORI, r5, r5, 10100)
+   m4_asm(ORI, r6, r1, 1011100)
+     m4_asm(XORI, r6, r6, 1011101)
+   m4_asm(ADDI, r7, r1, 111)
+     m4_asm(XORI, r7, r7, 11100)
+   m4_asm(SLLI, r8, r1, 110)
+     m4_asm(XORI, r8, r8, 10101000000)
+   m4_asm(SRLI, r9, r1, 10)
+     m4_asm(XORI, r9, r9, 101)
+   m4_asm(AND, r10, r1, r2)
+     m4_asm(XORI, r10, r10, 101)
+   m4_asm(OR, r11, r1, r2)
+     m4_asm(XORI, r11, r11, 10111)
+   m4_asm(XOR, r12, r1, r2)
+     m4_asm(XORI, r12, r12, 10010)
+   m4_asm(ADD, r13, r1, r2)
+     m4_asm(XORI, r13, r13, 11100)
+   m4_asm(SUB, r14, r1, r2)
+     m4_asm(XORI, r14, r14, 1110)
+   m4_asm(SLL, r15, r2, r2)
+     m4_asm(XORI, r15, r15, 1110000000)
+   m4_asm(SRL, r16, r1, r2)
+     m4_asm(XORI, r16, r16, 0)
+   m4_asm(SLTU, r17, r2, r1)
+     m4_asm(XORI, r17, r17, 1)
+   m4_asm(SLTIU, r18, r2, 10101)
+     m4_asm(XORI, r18, r18, 1)
+   m4_asm(LUI, r19, 0)
+     m4_asm(XORI, r19, r19, 0)
+   m4_asm(SRAI, r20, r3, 1)
+     m4_asm(XORI, r20, r20, 111111111110)
+   m4_asm(SLT, r21, r3, r1)
+     m4_asm(XORI, r21, r21, 1)
+   m4_asm(SLTI, r22, r3, 1)
+     m4_asm(XORI, r22, r22, 1)
+   m4_asm(SRA, r23, r1, r2)
+     m4_asm(XORI, r23, r23, 0)
+   // Test AUIPC. PC is >= 32 and < 64 instructions. JAL, and JALR together. Their PCs should differ by 4.
+   m4_asm(AUIPC, r4, 100)
+   m4_asm(SRLI, r24, r4, 111)
+     m4_asm(XORI, r24, r24, 10000001)
+   m4_asm(JAL, r25, 10)     // r25 = PC of next instr
+     m4_asm(AUIPC, r4, 0)   // r4 = PC
+     m4_asm(XOR, r25, r25, r4)  # AUIPC and JAR results are the same.
+   m4_asm(JALR, r26, r4, 1100)
+     m4_asm(SUB, r26, r26, r4)        // JALR PC+4 - AUIPC PC
+     m4_asm(XORI, r26, r26, 1100)  // - 4 instrs
+   //m4_asm(SW, r27, 
+   m4_asm(SW, r2, r1, 1)
+   m4_asm(LW, r27, r2, 1)
+     m4_asm(XOR, r27, r27, r1)
+   // Set r30[0], so always report passed on completion, regardless of registers containing zeros.
+   m4_asm(ADDI, r30, r0, 1)
+   m4_asm(JAL, r0, 0) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
+   m4_define(['M4_MAX_CYC'], 50)
 
-// ^===================================================================^
-
-\SV
-   m4_makerchip_module  // (Expanded in Nav-TLV pane.)
-   
-\TLV
-
+\TLV sum_prog()
    // /====================\
    // | Sum 1 to 9 Program |
    // \====================/
@@ -630,23 +728,39 @@ m4+definitions(['
    m4_asm(ADD, r14, r13, r14)           // Incremental summation
    m4_asm(ADDI, r13, r13, 1)            // Increment loop count by 1
    m4_asm(BLT, r13, r12, 1111111111000) // If a3 is less than a2, branch to label named <loop>
-   m4_asm(SW, r6, r1, 0)
-   m4_asm(LW, r4, r6, 0)
-   // Optional:
-   m4_asm(JAL, r7, 11111111111111101000) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
+   // Test result value in r14, and set r31 to reflect pass/fail.
+   m4_asm(ADDI, r30, r14, 111111010100) // Subtract expected value of 44 to set r30 to 1 if and only iff the result is 45 (1 + 2 + ... + 9).
+   m4_asm(BGE, r0, r0, 0) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
+   m4_define(['M4_MAX_CYC'], 50)
+
+
+// ^===================================================================^
+
+\SV
+   m4_makerchip_module  // (Expanded in Nav-TLV pane.)
+\TLV
+   // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+   // Possible choices for M4_LAB.
+   // START, PC, IMEM, INSTR_TYPE, FIELDS, IMM, SUBSET_INSTRS, RF_MACRO, RF_READ, SUBSET_ALU, RF_WRITE, TAKEN_BR, BR_REDIR, TB,
+   //    TEST_PROG, ALL_INSTRS, FULL_ALU, JUMP, LD_ST_ADDR, DMEM, LD_DATA, DONE
+   m4_default(['M4_LAB'], M4_START_LAB)
+   // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+   /* Built for LAB: M4_LAB */
+   
+   m4_ifelse(m4_reached(['TEST_PROG']), ['m4_define(['M4_VIZ_BASE'], 16)'])   // (Note that immediate values are shown in disassembled instructions in binary and signed decimal in decoder regardless of this setting.)
+   m4_define(['m4_prog_macro'], m4_ifelse(m4_reached(['TEST_PROG']), ['test_prog'], ['sum_prog']))
+   m4+m4_prog_macro()
    m4_asm_end()
    
-   
    //--------------------------------------
-   m4_default(['M4_LAB'], 10)
    
-   m4_ifelse_block(m4_eval(M4_LAB > 0), ['1'], ['
+   m4_ifelse_block(m4_reached(['PC']), ['
    $reset = *reset;
    $next_pc[31:0] =  $reset    ? '0              :
-                     m4_ifelse_block(m4_eval(M4_LAB > 8), ['1'], ['
+                     m4_ifelse_block(m4_reached(['BR_REDIR']), ['
                      $taken_br ? $br_tgt_pc   :
                      '])
-                     m4_ifelse_block(m4_eval(M4_LAB > 12), ['1'], ['
+                     m4_ifelse_block(m4_reached(['JUMP']), ['
                      $is_jal   ? $br_tgt_pc   :
                      $is_jalr  ? $jalr_tgt_pc :
                      '])
@@ -654,11 +768,11 @@ m4+definitions(['
    $pc[31:0] = >>1$next_pc;
    '])
    
-   m4_ifelse_block(m4_eval(M4_LAB > 1), ['1'], ['
+   m4_ifelse_block(m4_reached(['IMEM']), ['
    `READONLY_MEM($pc, $$instr[31:0])
    '])
    
-   m4_ifelse_block(m4_eval(M4_LAB > 2), ['1'], ['
+   m4_ifelse_block(m4_reached(['INSTR_TYPE']), ['
    $is_i_instr = $instr[6:2] ==? 5'b0000x ||
                  $instr[6:2] ==? 5'b001x0 ||
                  $instr[6:2] ==? 5'b11001 ;
@@ -676,14 +790,13 @@ m4+definitions(['
    $is_u_instr = $instr[6:2] ==? 5'b0x101;
    '])
    
-   m4_ifelse_block(m4_eval(M4_LAB > 3), ['1'], ['
+   m4_ifelse_block(m4_reached(['FIELDS']), ['
    $funct7[6:0]   =  $instr[31:25];
    $funct3[2:0]   =  $instr[14:12];
    $rs1[4:0]      =  $instr[19:15];
    $rs2[4:0]      =  $instr[24:20];
    $rd[4:0]       =  $instr[11:7];
    $opcode[6:0]   =  $instr[6:0];
-   `BOGUS_USE($funct7 $funct3 $rs1 $rs2 $rd $opcode)
    
    $funct7_valid  =  $is_r_instr;
    $funct3_valid  =  $is_r_instr || $is_i_instr || $is_s_instr || $is_b_instr;
@@ -691,20 +804,18 @@ m4+definitions(['
    $rs2_valid     =  $is_r_instr || $is_s_instr || $is_b_instr ;
    $rd_valid      =  $is_r_instr || $is_i_instr || $is_u_instr || $is_j_instr;
    $imm_valid     =  $is_i_instr || $is_s_instr || $is_b_instr || $is_u_instr || $is_j_instr;
-   `BOGUS_USE($funct7_valid $funct3_valid $rs1_valid $rs2_valid $rd_valid $imm_valid)
    '])
    
-   m4_ifelse_block(m4_eval(M4_LAB > 4), ['1'], ['
+   m4_ifelse_block(m4_reached(['IMM']), ['
    $imm[31:0]  =  $is_i_instr ?  {{21{$instr[31]}}, $instr[30:20]}                                  :
                   $is_s_instr ?  {{21{$instr[31]}}, $instr[30:25], $instr[11:7]}                    :
                   $is_b_instr ?  {{20{$instr[31]}}, $instr[7], $instr[30:25], $instr[11:8], 1'b0}   :
                   $is_u_instr ?  {$instr[31:12], 12'b0}                                             :
                   $is_j_instr ?  {{12{$instr[31]}}, $instr[19:12], $instr[20], $instr[30:21], 1'b0} :
                                  32'b0 ;
-   `BOGUS_USE($imm)
    '])
    
-   m4_ifelse_block(m4_eval(M4_LAB > 5), ['1'], ['
+   m4_ifelse_block(m4_reached(['SUBSET_INSTRS']), ['
    $dec_bits[10:0]   =  {$funct7[5], $funct3, $opcode};
    $is_beq           =  $dec_bits ==? 11'bx_000_1100011;
    $is_bne           =  $dec_bits ==? 11'bx_001_1100011;
@@ -715,21 +826,26 @@ m4+definitions(['
    
    $is_addi          =  $dec_bits ==? 11'bx_000_0010011;
    $is_add           =  $dec_bits ==? 11'b0_000_0110011;
-   `BOGUS_USE($is_beq $is_bne $is_blt $is_bge $is_bltu $is_bgeu $is_addi $is_add)
    '])
    
    //7 - RF Read
-   
-   m4_define(['m4_rf_wr_en'], ['$rd_valid'])
-   m4_define(['m4_rf_wr_data'], ['$result'])
-   m4_ifelse_block(m4_eval(M4_LAB > 11), ['1'], ['
+   m4_ifelse_block(m4_reached(['RF_WRITE']), ['
+   m4_define(['m4_rf_wr_en'],    ['$rd_valid'])
+   m4_define(['m4_rf_wr_index'], ['$rd'])
+   m4_define(['m4_rf_wr_data'],  ['$result'])
+   '], ['
+   m4_define(['m4_rf_wr_en'],    ['$rf_wr_en'])
+   m4_define(['m4_rf_wr_index'], ['$rf_wr_index'])
+   m4_define(['m4_rf_wr_data'],  ['$rf_wr_data'])
+   '])
+   m4_ifelse_block(m4_reached(['FULL_ALU']), ['
    $sltu_rslt  = $src1_value < $src2_value;
    $sltiu_rslt = $src1_value < $imm;
    '])
-   m4_ifelse_block(m4_eval(M4_LAB > 7), ['1'], ['
+   m4_ifelse_block(m4_reached(['SUBSET_ALU']), ['
    $result[31:0] =   $is_addi  ?  $src1_value + $imm :
                      $is_add   ?  $src1_value + $src2_value :
-                     m4_ifelse_block(m4_eval(M4_LAB > 11), ['1'], ['
+                     m4_ifelse_block(m4_reached(['FULL_ALU']), ['
                      $is_andi    ?  $src1_value & $imm :
                      $is_ori     ?  $src1_value | $imm :
                      $is_xori    ?  $src1_value ^ $imm :
@@ -752,15 +868,15 @@ m4+definitions(['
                      $is_slti    ?  (($src1_value[31] == $imm[31])        ? $sltiu_rslt : {31'b0, $src1_value[31]}) :
                      $is_sra     ?  {{32{$src1_value[31]}}, $src1_value} >> $src2_value[4:0] :
                      '])
-                     m4_ifelse_block(m4_eval(M4_LAB > 99), ['1'], ['
+                     m4_ifelse_block(m4_reached(['LD_ST_ADDR']), ['
                      $is_load || $is_s_instr ?  $src1_value + $imm :
                      '])
-                                  32'bx;
+                                  32'b0;
    m4_define(['m4_rf_wr_en'], ['$rd_valid && ($rd != 5'b0)'])
    '])
    
    
-   m4_ifelse_block(m4_eval(M4_LAB > 8), ['1'], ['
+   m4_ifelse_block(m4_reached(['TAKEN_BR']), ['
    $taken_br   =  $is_beq  ?  ($src1_value == $src2_value) :
                   $is_bne  ?  ($src1_value != $src2_value) :
                   $is_blt  ?  (($src1_value < $src2_value)  ^ ($src1_value[31] != $src2_value[31])) :
@@ -772,7 +888,7 @@ m4+definitions(['
    $br_tgt_pc[31:0]  =  $pc + $imm;
    '])
       
-   m4_ifelse_block(m4_eval(M4_LAB > 10), ['1'], ['
+   m4_ifelse_block(m4_reached(['ALL_INSTRS']), ['
    $is_lui     =  $dec_bits ==? 11'bx_xxx_0110111 ;
    $is_auipc   =  $dec_bits ==? 11'bx_xxx_0010111 ;
    $is_jal     =  $dec_bits ==? 11'bx_xxx_1101111 ;
@@ -801,25 +917,22 @@ m4+definitions(['
    $is_and     =  $dec_bits ==? 11'b0_111_0110011 ;
    '])
    
-   m4_ifelse_block(m4_eval(M4_LAB > 12), ['1'], ['
-   $is_jump             =  $is_jal || $is_jalr;
+   m4_ifelse_block(m4_reached(['JUMP']), ['
    $jalr_tgt_pc[31:0]   =  $src1_value + $imm;
    '])
    
-   
    //14 - DMem
-   m4_ifelse_block(m4_eval(M4_LAB > 13), ['1'], ['
-   m4_define(['m4_rf_wr_data'] ['$is_load ? $ld_data : $result'])
+   m4_ifelse_block(m4_reached(['LD_DATA']), ['
+   m4_define(['m4_rf_wr_data'], ['$is_load ? $ld_data : $result'])
    '])
-   
    
    // Assert these to end simulation (before Makerchip cycle limit).
-   m4_ifelse_block(m4_eval(M4_LAB > 9), ['1'], ['
-   *passed = /xreg[14]$value == (1+2+3+4+5+6+7+8+9);
+   m4_ifelse_block(m4_reached(['TB']), ['
+   m4+tb()
    '], ['
-   *passed = *cyc_cnt > 50;
+   *passed = 1'b0;
    '])
-   *failed = 1'b0;
+   *failed = *cyc_cnt > M4_MAX_CYC;
    
    // Macro instantiations for:
    //  o instruction memory
@@ -827,14 +940,17 @@ m4+definitions(['
    //  o data memory
    //  o CPU visualization
    //|cpu
-   m4_ifelse_block(m4_eval(M4_LAB > 6), ['1'], ['
-   m4+rf(32, 32, $reset, m4_rf_wr_en, $rd, m4_rf_wr_data, $rs1_valid, $rs1, $src1_value[31:0], $rs2_valid, $rs2, $src2_value[31:0])
+   m4_ifelse_block(m4_reached(['RF_READ']), ['
+   m4+rf(32, 32, $reset, m4_rf_wr_en, m4_rf_wr_index, m4_rf_wr_data, $rs1_valid, $rs1, $src1_value[31:0], $rs2_valid, $rs2, $src2_value[31:0])
+   '], m4_reached(['RF_MACRO']), ['
+   m4+rf(32, 32, $reset, $wr_en, $wr_index, $wr_data, $rd1_en, $rd1_index, $rd1_data, $rd2_en, $rd2_index, $rd2_data)
    '])
-   //m4+rf(32, 32, $reset, $rd_valid && ($rd != 5'b0), $rd, $result, $rs1_valid, $rs1, $src1_value[31:0], $rs2_valid, $rs2, $src2_value[31:0])
-   m4_ifelse_block(m4_eval(M4_LAB > 13), ['1'], ['
-   m4+dmem(32, 32, $reset, $is_s_instr, $result[6:2], $src2_value, $is_load, $result[6:2], $ld_data[31:0])
+   m4_ifelse_block(m4_reached(['DMEM']), ['
+   m4+dmem(32, 32, $reset, $is_s_instr, $result[6:2], $src2_value, $is_load, $result[6:2], $ld_data)
    '])
    
+   //m4+rf(32, 32, $reset, $wr_en, $wr_index, $wr_data, $rd1_en, $rd1_index, $rd1_data, $rd2_en, $rd2_index, $rd2_data)
+   //m4+dmem(32, 32, $reset, $wr_en, $wr_addr, $wr_data, $rd_en, $rd_addr, $wr_data)
    m4+cpu_viz()
 \SV
    endmodule
