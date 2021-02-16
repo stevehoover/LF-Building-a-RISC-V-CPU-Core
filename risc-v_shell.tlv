@@ -30,6 +30,7 @@
    // Test result value in r14, and set r31 to reflect pass/fail.
    m4_asm(ADDI, r30, r14, 111111010100) // Subtract expected value of 44 to set r30 to 1 if and only iff the result is 45 (1 + 2 + ... + 9).
    m4_asm(BGE, r0, r0, 0) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
+   m4_asm_end()
    m4_define(['M4_MAX_CYC'], 50)
    //---------------------------------------------------------------------------------
 

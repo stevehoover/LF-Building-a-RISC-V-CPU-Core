@@ -706,6 +706,7 @@ m4+definitions(['
    // Set r30[0], so always report passed on completion, regardless of registers containing zeros.
    m4_asm(ADDI, r30, r0, 1)
    m4_asm(JAL, r0, 0) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
+   m4_asm_end()
    m4_define(['M4_MAX_CYC'], 50)
 
 \TLV sum_prog()
@@ -731,6 +732,7 @@ m4+definitions(['
    // Test result value in r14, and set r31 to reflect pass/fail.
    m4_asm(ADDI, r30, r14, 111111010100) // Subtract expected value of 44 to set r30 to 1 if and only iff the result is 45 (1 + 2 + ... + 9).
    m4_asm(BGE, r0, r0, 0) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
+   m4_asm_end()
    m4_define(['M4_MAX_CYC'], 50)
 
 
@@ -750,7 +752,6 @@ m4+definitions(['
    m4_ifelse(m4_reached(['TEST_PROG']), ['m4_define(['M4_VIZ_BASE'], 16)'])   // (Note that immediate values are shown in disassembled instructions in binary and signed decimal in decoder regardless of this setting.)
    m4_define(['m4_prog_macro'], m4_ifelse(m4_reached(['TEST_PROG']), ['test_prog'], ['sum_prog']))
    m4+m4_prog_macro()
-   m4_asm_end()
    
    //--------------------------------------
    
@@ -828,7 +829,6 @@ m4+definitions(['
    $is_add           =  $dec_bits ==? 11'b0_000_0110011;
    '])
    
-   //7 - RF Read
    m4_ifelse_block(m4_reached(['RF_WRITE']), ['
    m4_define(['m4_rf_wr_en'],    ['$rd_valid'])
    m4_define(['m4_rf_wr_index'], ['$rd'])
@@ -921,7 +921,6 @@ m4+definitions(['
    $jalr_tgt_pc[31:0]   =  $src1_value + $imm;
    '])
    
-   //14 - DMem
    m4_ifelse_block(m4_reached(['LD_DATA']), ['
    m4_define(['m4_rf_wr_data'], ['$is_load ? $ld_data : $result'])
    '])
