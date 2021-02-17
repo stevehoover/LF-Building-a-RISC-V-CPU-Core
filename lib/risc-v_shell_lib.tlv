@@ -234,7 +234,7 @@ m4+definitions(['
                })
             
             let passed = new fabric.Text("", {
-                  top: 300,
+                  top: 340,
                   left: -30,
                   fontSize: 46,
                   fontWeight: 800
@@ -336,7 +336,6 @@ m4+definitions(['
             let rs2_valid     =   siggen("rs2_valid")
             let ld_data       =   siggen("ld_data")
             let mnemonic      =   siggen_mnemonic()
-            let dummy         =   siggen("dummy")
             let passed        =   siggen("passed_cond", false, false)
             
             let rf_rd_en1     =   siggen_rf_dmem("rf1_rd_en1")
@@ -573,7 +572,7 @@ m4+definitions(['
               } else {
                 // Using an unstable API, so:
                 try {
-                  passed.goTo(passed.sikkkgnal.waveData.endCycle - 1)
+                  passed.goTo(passed.signal.waveData.endCycle - 1)
                   if (passed.asBool()) {
                      this.getInitObject("passed").set({text:"Sim Passes", visible: true, fill: "lightgray"})
                   }
@@ -622,12 +621,12 @@ m4+definitions(['
                   
                   let instr = this.svSigRef(`instrs(${this.getIndex()})`)
                   if (instr) {
-                     let binary_str = instr.asBinaryStr("")
+                     let binary_str = instr.goTo(0).asBinaryStr("")
                      this.getInitObject("binary").setText(binary_str)
                   }
                   let disassembled = this.svSigRef(`instr_strs(${this.getIndex()})`)
                   if (disassembled) {
-                     let disassembled_str = disassembled.asString("")
+                     let disassembled_str = disassembled.goTo(0).asString("")
                      disassembled_str = disassembled_str.slice(0, -5)
                      this.getInitObject("disassembled").setText(disassembled_str)
                   }
@@ -649,65 +648,90 @@ m4+definitions(['
    // Some constant values to use as operands.
    m4_asm(ADDI, r1, r0, 10101)           // An operand value of 21.
    m4_asm(ADDI, r2, r0, 111)             // An operand value of 7.
-   m4_asm(XORI, r3, r0, 111111111100)    // An operand value of -4.
+   m4_asm(ADDI, r3, r0, 111111111100)    // An operand value of -4.
    // Execute one of each instruction, XORing subtracting (via ADDI) the expected value.
+   // ANDI:
    m4_asm(ANDI, r5, r1, 1011100)
-     m4_asm(XORI, r5, r5, 10100)
+   m4_asm(XORI, r5, r5, 10101)
+   // ORI:
    m4_asm(ORI, r6, r1, 1011100)
-     m4_asm(XORI, r6, r6, 1011101)
+   m4_asm(XORI, r6, r6, 1011100)
+   // ADDI:
    m4_asm(ADDI, r7, r1, 111)
-     m4_asm(XORI, r7, r7, 11100)
+   m4_asm(XORI, r7, r7, 11101)
+   // ADDI:
    m4_asm(SLLI, r8, r1, 110)
-     m4_asm(XORI, r8, r8, 10101000000)
+   m4_asm(XORI, r8, r8, 10101000001)
+   // SLLI:
    m4_asm(SRLI, r9, r1, 10)
-     m4_asm(XORI, r9, r9, 101)
+   m4_asm(XORI, r9, r9, 100)
+   // AND:
    m4_asm(AND, r10, r1, r2)
-     m4_asm(XORI, r10, r10, 101)
+   m4_asm(XORI, r10, r10, 100)
+   // OR:
    m4_asm(OR, r11, r1, r2)
-     m4_asm(XORI, r11, r11, 10111)
+   m4_asm(XORI, r11, r11, 10110)
+   // XOR:
    m4_asm(XOR, r12, r1, r2)
-     m4_asm(XORI, r12, r12, 10010)
+   m4_asm(XORI, r12, r12, 10011)
+   // ADD:
    m4_asm(ADD, r13, r1, r2)
-     m4_asm(XORI, r13, r13, 11100)
+   m4_asm(XORI, r13, r13, 11101)
+   // SUB:
    m4_asm(SUB, r14, r1, r2)
-     m4_asm(XORI, r14, r14, 1110)
+   m4_asm(XORI, r14, r14, 1111)
+   // SLL:
    m4_asm(SLL, r15, r2, r2)
-     m4_asm(XORI, r15, r15, 1110000000)
+   m4_asm(XORI, r15, r15, 1110000001)
+   // SRL:
    m4_asm(SRL, r16, r1, r2)
-     m4_asm(XORI, r16, r16, 0)
+   m4_asm(XORI, r16, r16, 1)
+   // SLTU:
    m4_asm(SLTU, r17, r2, r1)
-     m4_asm(XORI, r17, r17, 1)
+   m4_asm(XORI, r17, r17, 0)
+   // SLTIU:
    m4_asm(SLTIU, r18, r2, 10101)
-     m4_asm(XORI, r18, r18, 1)
+   m4_asm(XORI, r18, r18, 0)
+   // LUI:
    m4_asm(LUI, r19, 0)
-     m4_asm(XORI, r19, r19, 0)
+   m4_asm(XORI, r19, r19, 1)
+   // SRAI:
    m4_asm(SRAI, r20, r3, 1)
-     m4_asm(XORI, r20, r20, 111111111110)
+   m4_asm(XORI, r20, r20, 111111111111)
+   // SLT:
    m4_asm(SLT, r21, r3, r1)
-     m4_asm(XORI, r21, r21, 1)
+   m4_asm(XORI, r21, r21, 0)
+   // SLTI:
    m4_asm(SLTI, r22, r3, 1)
-     m4_asm(XORI, r22, r22, 1)
+   m4_asm(XORI, r22, r22, 0)
+   // SRA:
    m4_asm(SRA, r23, r1, r2)
-     m4_asm(XORI, r23, r23, 0)
-   // Test AUIPC. PC is >= 32 and < 64 instructions. JAL, and JALR together. Their PCs should differ by 4.
+   m4_asm(XORI, r23, r23, 1)
+   // AUIPC:
    m4_asm(AUIPC, r4, 100)
    m4_asm(SRLI, r24, r4, 111)
-     m4_asm(XORI, r24, r24, 10000001)
+   m4_asm(XORI, r24, r24, 10000000)
+   // JAL:
    m4_asm(JAL, r25, 10)     // r25 = PC of next instr
-     m4_asm(AUIPC, r4, 0)   // r4 = PC
-     m4_asm(XOR, r25, r25, r4)  # AUIPC and JAR results are the same.
-   m4_asm(JALR, r26, r4, 1100)
-     m4_asm(SUB, r26, r26, r4)        // JALR PC+4 - AUIPC PC
-     m4_asm(XORI, r26, r26, 1100)  // - 4 instrs
-   //m4_asm(SW, r27, 
+   m4_asm(AUIPC, r4, 0)     // r4 = PC
+   m4_asm(XOR, r25, r25, r4)  # AUIPC and JAR results are the same.
+   m4_asm(XORI, r25, r25, 1)
+   // JALR:
+   m4_asm(JALR, r26, r4, 10000)
+   m4_asm(SUB, r26, r26, r4)        // JALR PC+4 - AUIPC PC
+   m4_asm(ADDI, r26, r26, 111111110001)  // - 4 instrs, + 1
+   // SW & LW:
    m4_asm(SW, r2, r1, 1)
    m4_asm(LW, r27, r2, 1)
-     m4_asm(XOR, r27, r27, r1)
-   // Set r30[0], so always report passed on completion, regardless of registers containing zeros.
+   m4_asm(XORI, r27, r27, 10100)
+   // Write 1 to remaining registers prior to r30 just to avoid concern.
+   m4_asm(ADDI, r28, r0, 1)
+   m4_asm(ADDI, r29, r0, 1)
+   // Terminate with success condition (regardless of correctness of register values):
    m4_asm(ADDI, r30, r0, 1)
    m4_asm(JAL, r0, 0) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
    m4_asm_end()
-   m4_define(['M4_MAX_CYC'], 50)
+   m4_define(['M4_MAX_CYC'], 70)
 
 \TLV sum_prog()
    // /====================\
@@ -733,7 +757,7 @@ m4+definitions(['
    m4_asm(ADDI, r30, r14, 111111010100) // Subtract expected value of 44 to set r30 to 1 if and only iff the result is 45 (1 + 2 + ... + 9).
    m4_asm(BGE, r0, r0, 0) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
    m4_asm_end()
-   m4_define(['M4_MAX_CYC'], 50)
+   m4_define(['M4_MAX_CYC'], 40)
 
 
 // ^===================================================================^
@@ -745,7 +769,7 @@ m4+definitions(['
    // Possible choices for M4_LAB.
    // START, PC, IMEM, INSTR_TYPE, FIELDS, IMM, SUBSET_INSTRS, RF_MACRO, RF_READ, SUBSET_ALU, RF_WRITE, TAKEN_BR, BR_REDIR, TB,
    //    TEST_PROG, ALL_INSTRS, FULL_ALU, JUMP, LD_ST_ADDR, DMEM, LD_DATA, DONE
-   m4_default(['M4_LAB'], M4_START_LAB)
+   m4_default(['M4_LAB'], M4_DONE_LAB)
    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
    /* Built for LAB: M4_LAB */
    
