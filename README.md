@@ -10,6 +10,6 @@ To begin the first RISC-V lab, use this link to <a href="https://makerchip.com/s
 
 In case you get stuck, we've got your back! These <a href="https://makerchip.com/sandbox?code_url=https:%2F%2Fraw.githubusercontent.com%2Fstevehoover%2FLF-Building-a-RISC-V-CPU-Core%2Fmain%2Frisc-v_solutions.tlv" target="_blank" atom_fix="_">reference solutions</a> will help with syntax, etc. without handing your the answers.
 
-## Final Result:
+## Final Result
 
 ![Final Core](lib/riscv.svg)
