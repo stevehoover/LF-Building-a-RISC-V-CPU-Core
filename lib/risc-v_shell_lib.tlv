@@ -1,6 +1,6 @@
 \m4_TLV_version 1d: tl-x.org
 \SV
-   m4_include_lib(['https://raw.githubusercontent.com/stevehoover/warp-v_includes/2d6d36baa4d2bc62321f982f78c8fe1456641a43/risc-v_defs.tlv'])
+   m4_include_lib(['https://raw.githubusercontent.com/stevehoover/warp-v_includes/1d1023ccf8e7b0a8cf8e8fc4f0a823ebb61008e3/risc-v_defs.tlv'])
 
 // v====================== lib/risc-v_shell_lib.tlv =======================v
 
@@ -756,13 +756,6 @@ m4+definitions(['
 \SV
    m4_makerchip_module  // (Expanded in Nav-TLV pane.)
 \TLV
-   // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-   // Possible choices for M4_LAB.
-   // START, PC, IMEM, INSTR_TYPE, FIELDS, IMM, SUBSET_INSTRS, RF_MACRO, RF_READ, SUBSET_ALU, RF_WRITE, TAKEN_BR, BR_REDIR, TB,
-   //    TEST_PROG, ALL_INSTRS, FULL_ALU, JUMP, LD_ST_ADDR, DMEM, LD_DATA, DONE
-   m4_default(['M4_LAB'], M4_PC_LAB)
-   // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-   /* Built for LAB: M4_LAB */
-
+   // Do nothing.
 \SV
    endmodule
