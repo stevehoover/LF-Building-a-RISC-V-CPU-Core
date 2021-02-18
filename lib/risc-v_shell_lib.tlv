@@ -636,90 +636,90 @@ m4+definitions(['
    // \=======================/
    //
    // Some constant values to use as operands.
-   m4_asm(ADDI, r1, r0, 10101)           // An operand value of 21.
-   m4_asm(ADDI, r2, r0, 111)             // An operand value of 7.
-   m4_asm(ADDI, r3, r0, 111111111100)    // An operand value of -4.
+   m4_asm(ADDI, x1, x0, 10101)           // An operand value of 21.
+   m4_asm(ADDI, x2, x0, 111)             // An operand value of 7.
+   m4_asm(ADDI, x3, x0, 111111111100)    // An operand value of -4.
    // Execute one of each instruction, XORing subtracting (via ADDI) the expected value.
    // ANDI:
-   m4_asm(ANDI, r5, r1, 1011100)
-   m4_asm(XORI, r5, r5, 10101)
+   m4_asm(ANDI, x5, x1, 1011100)
+   m4_asm(XORI, x5, x5, 10101)
    // ORI:
-   m4_asm(ORI, r6, r1, 1011100)
-   m4_asm(XORI, r6, r6, 1011100)
+   m4_asm(ORI, x6, x1, 1011100)
+   m4_asm(XORI, x6, x6, 1011100)
    // ADDI:
-   m4_asm(ADDI, r7, r1, 111)
-   m4_asm(XORI, r7, r7, 11101)
+   m4_asm(ADDI, x7, x1, 111)
+   m4_asm(XORI, x7, x7, 11101)
    // ADDI:
-   m4_asm(SLLI, r8, r1, 110)
-   m4_asm(XORI, r8, r8, 10101000001)
+   m4_asm(SLLI, x8, x1, 110)
+   m4_asm(XORI, x8, x8, 10101000001)
    // SLLI:
-   m4_asm(SRLI, r9, r1, 10)
-   m4_asm(XORI, r9, r9, 100)
+   m4_asm(SRLI, x9, x1, 10)
+   m4_asm(XORI, x9, x9, 100)
    // AND:
-   m4_asm(AND, r10, r1, r2)
-   m4_asm(XORI, r10, r10, 100)
+   m4_asm(AND, r10, x1, x2)
+   m4_asm(XORI, x10, x10, 100)
    // OR:
-   m4_asm(OR, r11, r1, r2)
-   m4_asm(XORI, r11, r11, 10110)
+   m4_asm(OR, x11, x1, x2)
+   m4_asm(XORI, x11, x11, 10110)
    // XOR:
-   m4_asm(XOR, r12, r1, r2)
-   m4_asm(XORI, r12, r12, 10011)
+   m4_asm(XOR, x12, x1, x2)
+   m4_asm(XORI, x12, x12, 10011)
    // ADD:
-   m4_asm(ADD, r13, r1, r2)
-   m4_asm(XORI, r13, r13, 11101)
+   m4_asm(ADD, x13, x1, x2)
+   m4_asm(XORI, x13, x13, 11101)
    // SUB:
-   m4_asm(SUB, r14, r1, r2)
-   m4_asm(XORI, r14, r14, 1111)
+   m4_asm(SUB, x14, x1, x2)
+   m4_asm(XORI, x14, x14, 1111)
    // SLL:
-   m4_asm(SLL, r15, r2, r2)
-   m4_asm(XORI, r15, r15, 1110000001)
+   m4_asm(SLL, x15, x2, x2)
+   m4_asm(XORI, x15, x15, 1110000001)
    // SRL:
-   m4_asm(SRL, r16, r1, r2)
-   m4_asm(XORI, r16, r16, 1)
+   m4_asm(SRL, x16, x1, x2)
+   m4_asm(XORI, x16, x16, 1)
    // SLTU:
-   m4_asm(SLTU, r17, r2, r1)
-   m4_asm(XORI, r17, r17, 0)
+   m4_asm(SLTU, x17, x2, x1)
+   m4_asm(XORI, x17, x17, 0)
    // SLTIU:
-   m4_asm(SLTIU, r18, r2, 10101)
-   m4_asm(XORI, r18, r18, 0)
+   m4_asm(SLTIU, x18, x2, 10101)
+   m4_asm(XORI, x18, x18, 0)
    // LUI:
-   m4_asm(LUI, r19, 0)
-   m4_asm(XORI, r19, r19, 1)
+   m4_asm(LUI, x19, 0)
+   m4_asm(XORI, x19, x19, 1)
    // SRAI:
-   m4_asm(SRAI, r20, r3, 1)
-   m4_asm(XORI, r20, r20, 111111111111)
+   m4_asm(SRAI, x20, x3, 1)
+   m4_asm(XORI, x20, x20, 111111111111)
    // SLT:
-   m4_asm(SLT, r21, r3, r1)
-   m4_asm(XORI, r21, r21, 0)
+   m4_asm(SLT, x21, x3, x1)
+   m4_asm(XORI, x21, x21, 0)
    // SLTI:
-   m4_asm(SLTI, r22, r3, 1)
-   m4_asm(XORI, r22, r22, 0)
+   m4_asm(SLTI, x22, x3, 1)
+   m4_asm(XORI, x22, x22, 0)
    // SRA:
-   m4_asm(SRA, r23, r1, r2)
-   m4_asm(XORI, r23, r23, 1)
+   m4_asm(SRA, x23, x1, x2)
+   m4_asm(XORI, x23, x23, 1)
    // AUIPC:
-   m4_asm(AUIPC, r4, 100)
-   m4_asm(SRLI, r24, r4, 111)
-   m4_asm(XORI, r24, r24, 10000000)
+   m4_asm(AUIPC, x4, 100)
+   m4_asm(SRLI, x24, x4, 111)
+   m4_asm(XORI, x24, x24, 10000000)
    // JAL:
-   m4_asm(JAL, r25, 10)     // r25 = PC of next instr
-   m4_asm(AUIPC, r4, 0)     // r4 = PC
-   m4_asm(XOR, r25, r25, r4)  # AUIPC and JAR results are the same.
-   m4_asm(XORI, r25, r25, 1)
+   m4_asm(JAL, x25, 10)     // x25 = PC of next instr
+   m4_asm(AUIPC, x4, 0)     // x4 = PC
+   m4_asm(XOR, x25, x25, x4)  # AUIPC and JAR results are the same.
+   m4_asm(XORI, x25, x25, 1)
    // JALR:
-   m4_asm(JALR, r26, r4, 10000)
-   m4_asm(SUB, r26, r26, r4)        // JALR PC+4 - AUIPC PC
-   m4_asm(ADDI, r26, r26, 111111110001)  // - 4 instrs, + 1
+   m4_asm(JALR, x26, x4, 10000)
+   m4_asm(SUB, x26, x26, x4)        // JALR PC+4 - AUIPC PC
+   m4_asm(ADDI, x26, x26, 111111110001)  // - 4 instrs, + 1
    // SW & LW:
-   m4_asm(SW, r2, r1, 1)
-   m4_asm(LW, r27, r2, 1)
-   m4_asm(XORI, r27, r27, 10100)
-   // Write 1 to remaining registers prior to r30 just to avoid concern.
-   m4_asm(ADDI, r28, r0, 1)
-   m4_asm(ADDI, r29, r0, 1)
+   m4_asm(SW, x2, x1, 1)
+   m4_asm(LW, x27, x2, 1)
+   m4_asm(XORI, x27, x27, 10100)
+   // Write 1 to remaining registers prior to x30 just to avoid concern.
+   m4_asm(ADDI, x28, x0, 1)
+   m4_asm(ADDI, x29, x0, 1)
    // Terminate with success condition (regardless of correctness of register values):
-   m4_asm(ADDI, r30, r0, 1)
-   m4_asm(JAL, r0, 0) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
+   m4_asm(ADDI, x30, x0, 1)
+   m4_asm(JAL, x0, 0) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
    m4_asm_end()
    m4_define(['M4_MAX_CYC'], 70)
 
@@ -733,20 +733,20 @@ m4+definitions(['
    // Add 1,2,3,...,9 (in that order).
    //
    // Regs:
-   //  r12 (a2): 10
-   //  r13 (a3): 1..10
-   //  r14 (a4): Sum
+   //  x12 (a2): 10
+   //  x13 (a3): 1..10
+   //  x14 (a4): Sum
    // 
-   m4_asm(ADDI, r14, r0, 0)             // Initialize sum register a4 with 0
-   m4_asm(ADDI, r12, r0, 1010)          // Store count of 10 in register a2.
-   m4_asm(ADDI, r13, r0, 1)             // Initialize loop count register a3 with 0
+   m4_asm(ADDI, x14, x0, 0)             // Initialize sum register x14 with 0
+   m4_asm(ADDI, x12, x0, 1010)          // Store count of 10 in register x12.
+   m4_asm(ADDI, x13, x0, 1)             // Initialize loop count register x13 with 0
    // Loop:
-   m4_asm(ADD, r14, r13, r14)           // Incremental summation
-   m4_asm(ADDI, r13, r13, 1)            // Increment loop count by 1
-   m4_asm(BLT, r13, r12, 1111111111000) // If a3 is less than a2, branch to label named <loop>
-   // Test result value in r14, and set r31 to reflect pass/fail.
-   m4_asm(ADDI, r30, r14, 111111010100) // Subtract expected value of 44 to set r30 to 1 if and only iff the result is 45 (1 + 2 + ... + 9).
-   m4_asm(BGE, r0, r0, 0) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
+   m4_asm(ADD, x14, x13, x14)           // Incremental summation
+   m4_asm(ADDI, x13, x13, 1)            // Increment loop count by 1
+   m4_asm(BLT, x13, x12, 1111111111000) // If x13 is less than x12, branch to label named <loop>
+   // Test result value in x14, and set x31 to reflect pass/fail.
+   m4_asm(ADDI, x30, x14, 111111010100) // Subtract expected value of 44 to set x30 to 1 if and only iff the result is 45 (1 + 2 + ... + 9).
+   m4_asm(BGE, x0, x0, 0) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
    m4_asm_end()
    m4_define(['M4_MAX_CYC'], 40)
 
