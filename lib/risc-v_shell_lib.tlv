@@ -413,7 +413,7 @@ m4+definitions(['
             // Instruction with values
             
             let regStr = (valid, regNum, regValue) => {
-               return valid ? `r${regNum}` : `rX`  // valid ? `r${regNum} (${regValue})` : `rX`
+               return valid ? `x${regNum}` : `xX`  // valid ? `x${regNum} (${regValue})` : `xX`
             }
             let immStr = (valid, immValue) => {
                immValue = parseInt(immValue,2) + 2*(immValue[0] << 31)
