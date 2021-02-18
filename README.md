@@ -4,12 +4,12 @@ Accompanying resources for the [Building a RISC-V CPU Core](https://courses.edx.
 
 ## RISC-V Starting-Point Code
 
-To begin the first RISC-V lab, use this link to <a href="https://makerchip.com/sandbox?code_url=https:%2F%2Fraw.githubusercontent.com%2Fstevehoover%2FLF-Building-a-RISC-V-CPU-Core%2Fmaster%2Frisc-v_shell.tlv" target="_blank" atom_fix="_">open starting-point code in makerchip</a>.
+To begin the first RISC-V lab, Ctrl-click this link to <a href="https://makerchip.com/sandbox?code_url=https:%2F%2Fraw.githubusercontent.com%2Fstevehoover%2FLF-Building-a-RISC-V-CPU-Core%2Fmaster%2Frisc-v_shell.tlv" target="_blank" atom_fix="_">open starting-point code in makerchip</a>.
 
 ## RISC-V Reference Solution
 
-In case you get stuck, use this <a href="https://makerchip.com/sandbox?code_url=https:%2F%2Fraw.githubusercontent.com%2Fstevehoover%2FLF-Building-a-RISC-V-CPU-Core%2Fmaster%2Friscv_solutions.tlv" target="_blank" atom_fix="_">reference solution</a> to help with syntax, etc.
+In case you get stuck, we've got your back! These <a href="https://makerchip.com/sandbox?code_url=https:%2F%2Fraw.githubusercontent.com%2Fstevehoover%2FLF-Building-a-RISC-V-CPU-Core%2Fmain%2Frisc-v_solutions.tlv" target="_blank" atom_fix="_">reference solutions</a> (Ctrl-click) will help with syntax, etc. without handing your the answers.
 
-## Final Result:
+## Final Result
 
 ![Final Core](lib/riscv.svg)
