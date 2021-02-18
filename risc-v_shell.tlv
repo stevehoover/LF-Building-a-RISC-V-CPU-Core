@@ -2,7 +2,7 @@
 \SV
    // This code can be found in: https://github.com/stevehoover/LF-Building-a-RISC-V-CPU-Core/risc-v_shell.tlv
    
-   m4_include_lib(['https://raw.githubusercontent.com/stevehoover/warp-v_includes/2d6d36baa4d2bc62321f982f78c8fe1456641a43/risc-v_defs.tlv'])
+   m4_include_lib(['https://raw.githubusercontent.com/stevehoover/warp-v_includes/1d1023ccf8e7b0a8cf8e8fc4f0a823ebb61008e3/risc-v_defs.tlv'])
    m4_include_lib(['https://raw.githubusercontent.com/stevehoover/LF-Building-a-RISC-V-CPU-Core/main/lib/risc-v_shell_lib.tlv'])
 
 
@@ -16,20 +16,20 @@
    // Add 1,2,3,...,9 (in that order).
    //
    // Regs:
-   //  r12 (a2): 10
-   //  r13 (a3): 1..10
-   //  r14 (a4): Sum
+   //  x12 (a2): 10
+   //  x13 (a3): 1..10
+   //  x14 (a4): Sum
    // 
-   m4_asm(ADDI, r14, r0, 0)             // Initialize sum register a4 with 0
-   m4_asm(ADDI, r12, r0, 1010)          // Store count of 10 in register a2.
-   m4_asm(ADDI, r13, r0, 1)             // Initialize loop count register a3 with 0
+   m4_asm(ADDI, x14, x0, 0)             // Initialize sum register a4 with 0
+   m4_asm(ADDI, x12, x0, 1010)          // Store count of 10 in register a2.
+   m4_asm(ADDI, x13, x0, 1)             // Initialize loop count register a3 with 0
    // Loop:
-   m4_asm(ADD, r14, r13, r14)           // Incremental summation
-   m4_asm(ADDI, r13, r13, 1)            // Increment loop count by 1
-   m4_asm(BLT, r13, r12, 1111111111000) // If a3 is less than a2, branch to label named <loop>
-   // Test result value in r14, and set r31 to reflect pass/fail.
-   m4_asm(ADDI, r30, r14, 111111010100) // Subtract expected value of 44 to set r30 to 1 if and only iff the result is 45 (1 + 2 + ... + 9).
-   m4_asm(BGE, r0, r0, 0) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
+   m4_asm(ADD, x14, x13, x14)           // Incremental summation
+   m4_asm(ADDI, x13, x13, 1)            // Increment loop count by 1
+   m4_asm(BLT, x13, x12, 1111111111000) // If a3 is less than a2, branch to label named <loop>
+   // Test result value in x14, and set x31 to reflect pass/fail.
+   m4_asm(ADDI, x30, x14, 111111010100) // Subtract expected value of 44 to set x30 to 1 if and only iff the result is 45 (1 + 2 + ... + 9).
+   m4_asm(BGE, x0, x0, 0) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
    m4_asm_end()
    m4_define(['M4_MAX_CYC'], 50)
    //---------------------------------------------------------------------------------
