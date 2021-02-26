@@ -1,7 +1,7 @@
 \m4_TLV_version 1d: tl-x.org
 \SV
    m4_include_lib(['https://raw.githubusercontent.com/stevehoover/warp-v_includes/1d1023ccf8e7b0a8cf8e8fc4f0a823ebb61008e3/risc-v_defs.tlv'])
-
+   
 // v====================== lib/risc-v_shell_lib.tlv =======================v
 
 // Configuration for WARP-V definitions.
@@ -15,7 +15,8 @@ m4+definitions(['
    
    // A single-line M4 macro instantiated at the end of the asm code.
    // It actually produces a definition of an SV macro that instantiates the IMem conaining the program (that can be parsed without \SV_plus). 
-   m4_define(['m4_asm_end'], ['`define READONLY_MEM(ADDR, DATA) logic [31:0] instrs [0:M4_NUM_INSTRS-1]; assign DATA \= instrs[ADDR[\$clog2(\$size(instrs)) + 1 : 2]]; assign instrs \= '{m4_instr0['']m4_forloop(['m4_instr_ind'], 1, M4_NUM_INSTRS, [', m4_echo(['m4_instr']m4_instr_ind)'])};'])
+   m4_define(['m4_asm_end'], ['`define READONLY_MEM(ADDR, DATA) logic [31:0] instrs [0:M4_NUM_INSTRS-1]; assign DATA = instrs[ADDR[$clog2($size(instrs)) + 1 : 2]]; assign instrs = '{m4_instr0['']m4_forloop(['m4_instr_ind'], 1, M4_NUM_INSTRS, [', m4_echo(['m4_instr']m4_instr_ind)'])};'])
+   m4_define(['m4_asm_end_tlv'], ['`define READONLY_MEM(ADDR, DATA) logic [31:0] instrs [0:M4_NUM_INSTRS-1]; assign DATA \= instrs[ADDR[\$clog2(\$size(instrs)) + 1 : 2]]; assign instrs \= '{m4_instr0['']m4_forloop(['m4_instr_ind'], 1, M4_NUM_INSTRS, [', m4_echo(['m4_instr']m4_instr_ind)'])};'])
 '])
 
 
@@ -562,7 +563,7 @@ m4+definitions(['
               } else {
                 // Using an unstable API, so:
                 try {
-                  passed.goTo(passed.signal.waveData.endCycle - 1)
+                  passed.goToSimEnd().step(-1)
                   if (passed.asBool()) {
                      this.getInitObject("passed").set({text:"Sim Passes", visible: true, fill: "lightgray"})
                   }
@@ -611,12 +612,12 @@ m4+definitions(['
                   
                   let instr = this.svSigRef(`instrs(${this.getIndex()})`)
                   if (instr) {
-                     let binary_str = instr.goTo(0).asBinaryStr("")
+                     let binary_str = instr.goToSimStart().asBinaryStr("")
                      this.getInitObject("binary").setText(binary_str)
                   }
                   let disassembled = this.svSigRef(`instr_strs(${this.getIndex()})`)
                   if (disassembled) {
-                     let disassembled_str = disassembled.goTo(0).asString("")
+                     let disassembled_str = disassembled.goToSimStart().asString("")
                      disassembled_str = disassembled_str.slice(0, -5)
                      this.getInitObject("disassembled").setText(disassembled_str)
                   }
@@ -720,7 +721,7 @@ m4+definitions(['
    // Terminate with success condition (regardless of correctness of register values):
    m4_asm(ADDI, x30, x0, 1)
    m4_asm(JAL, x0, 0) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
-   m4_asm_end()
+   m4_asm_end_tlv()
    m4_define(['M4_MAX_CYC'], 70)
 
 // (A copy of this appears in the shell code.)
@@ -747,7 +748,7 @@ m4+definitions(['
    // Test result value in x14, and set x31 to reflect pass/fail.
    m4_asm(ADDI, x30, x14, 111111010100) // Subtract expected value of 44 to set x30 to 1 if and only iff the result is 45 (1 + 2 + ... + 9).
    m4_asm(BGE, x0, x0, 0) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
-   m4_asm_end()
+   m4_asm_end_tlv()
    m4_define(['M4_MAX_CYC'], 40)
 
 
