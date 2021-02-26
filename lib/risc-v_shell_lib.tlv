@@ -13,6 +13,8 @@ m4+definitions(['
    
    m4_echo(m4tlv_riscv_gen__body())
    
+   m4_define(['M4_MAX_CYC'], 70)  // Default for m4+test_prog().
+   
    // A single-line M4 macro instantiated at the end of the asm code.
    // It actually produces a definition of an SV macro that instantiates the IMem conaining the program (that can be parsed without \SV_plus). 
    m4_define(['m4_asm_end'], ['`define READONLY_MEM(ADDR, DATA) logic [31:0] instrs [0:M4_NUM_INSTRS-1]; assign DATA = instrs[ADDR[$clog2($size(instrs)) + 1 : 2]]; assign instrs = '{m4_instr0['']m4_forloop(['m4_instr_ind'], 1, M4_NUM_INSTRS, [', m4_echo(['m4_instr']m4_instr_ind)'])};'])
@@ -722,7 +724,6 @@ m4+definitions(['
    m4_asm(ADDI, x30, x0, 1)
    m4_asm(JAL, x0, 0) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
    m4_asm_end_tlv()
-   m4_define(['M4_MAX_CYC'], 70)
 
 // (A copy of this appears in the shell code.)
 \TLV sum_prog()
