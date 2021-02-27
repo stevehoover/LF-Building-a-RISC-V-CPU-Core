@@ -6,6 +6,100 @@
 
 // Configuration for WARP-V definitions.
 m4+definitions(['
+   // Define full test program.
+   // Provide a non-empty argument if this is instantiated within a \TLV region (vs. \SV).
+   m4_define(['m4_test_prog'], ['m4_hide(['
+     // /=======================\
+     // | Test each instruction |
+     // \=======================/
+     //
+     // Some constant values to use as operands.
+     m4_asm(ADDI, x1, x0, 10101)           // An operand value of 21.
+     m4_asm(ADDI, x2, x0, 111)             // An operand value of 7.
+     m4_asm(ADDI, x3, x0, 111111111100)    // An operand value of -4.
+     // Execute one of each instruction, XORing subtracting (via ADDI) the expected value.
+     // ANDI:
+     m4_asm(ANDI, x5, x1, 1011100)
+     m4_asm(XORI, x5, x5, 10101)
+     // ORI:
+     m4_asm(ORI, x6, x1, 1011100)
+     m4_asm(XORI, x6, x6, 1011100)
+     // ADDI:
+     m4_asm(ADDI, x7, x1, 111)
+     m4_asm(XORI, x7, x7, 11101)
+     // ADDI:
+     m4_asm(SLLI, x8, x1, 110)
+     m4_asm(XORI, x8, x8, 10101000001)
+     // SLLI:
+     m4_asm(SRLI, x9, x1, 10)
+     m4_asm(XORI, x9, x9, 100)
+     // AND:
+     m4_asm(AND, r10, x1, x2)
+     m4_asm(XORI, x10, x10, 100)
+     // OR:
+     m4_asm(OR, x11, x1, x2)
+     m4_asm(XORI, x11, x11, 10110)
+     // XOR:
+     m4_asm(XOR, x12, x1, x2)
+     m4_asm(XORI, x12, x12, 10011)
+     // ADD:
+     m4_asm(ADD, x13, x1, x2)
+     m4_asm(XORI, x13, x13, 11101)
+     // SUB:
+     m4_asm(SUB, x14, x1, x2)
+     m4_asm(XORI, x14, x14, 1111)
+     // SLL:
+     m4_asm(SLL, x15, x2, x2)
+     m4_asm(XORI, x15, x15, 1110000001)
+     // SRL:
+     m4_asm(SRL, x16, x1, x2)
+     m4_asm(XORI, x16, x16, 1)
+     // SLTU:
+     m4_asm(SLTU, x17, x2, x1)
+     m4_asm(XORI, x17, x17, 0)
+     // SLTIU:
+     m4_asm(SLTIU, x18, x2, 10101)
+     m4_asm(XORI, x18, x18, 0)
+     // LUI:
+     m4_asm(LUI, x19, 0)
+     m4_asm(XORI, x19, x19, 1)
+     // SRAI:
+     m4_asm(SRAI, x20, x3, 1)
+     m4_asm(XORI, x20, x20, 111111111111)
+     // SLT:
+     m4_asm(SLT, x21, x3, x1)
+     m4_asm(XORI, x21, x21, 0)
+     // SLTI:
+     m4_asm(SLTI, x22, x3, 1)
+     m4_asm(XORI, x22, x22, 0)
+     // SRA:
+     m4_asm(SRA, x23, x1, x2)
+     m4_asm(XORI, x23, x23, 1)
+     // AUIPC:
+     m4_asm(AUIPC, x4, 100)
+     m4_asm(SRLI, x24, x4, 111)
+     m4_asm(XORI, x24, x24, 10000000)
+     // JAL:
+     m4_asm(JAL, x25, 10)     // x25 = PC of next instr
+     m4_asm(AUIPC, x4, 0)     // x4 = PC
+     m4_asm(XOR, x25, x25, x4)  # AUIPC and JAR results are the same.
+     m4_asm(XORI, x25, x25, 1)
+     // JALR:
+     m4_asm(JALR, x26, x4, 10000)
+     m4_asm(SUB, x26, x26, x4)        // JALR PC+4 - AUIPC PC
+     m4_asm(ADDI, x26, x26, 111111110001)  // - 4 instrs, + 1
+     // SW & LW:
+     m4_asm(SW, x2, x1, 1)
+     m4_asm(LW, x27, x2, 1)
+     m4_asm(XORI, x27, x27, 10100)
+     // Write 1 to remaining registers prior to x30 just to avoid concern.
+     m4_asm(ADDI, x28, x0, 1)
+     m4_asm(ADDI, x29, x0, 1)
+     // Terminate with success condition (regardless of correctness of register values):
+     m4_asm(ADDI, x30, x0, 1)
+     m4_asm(JAL, x0, 0) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
+     '])m4_ifelse(['$1'], [''], ['m4_asm_end()'], ['m4_asm_end_tlv()'])'])
+   
    m4_define_vector(['M4_WORD'], 32)
    m4_define(['M4_EXT_I'], 1)
    
@@ -13,14 +107,14 @@ m4+definitions(['
    
    m4_echo(m4tlv_riscv_gen__body())
    
-   m4_define(['M4_MAX_CYC'], 70)  // Default for m4+test_prog().
-   
    // A single-line M4 macro instantiated at the end of the asm code.
    // It actually produces a definition of an SV macro that instantiates the IMem conaining the program (that can be parsed without \SV_plus). 
    m4_define(['m4_asm_end'], ['`define READONLY_MEM(ADDR, DATA) logic [31:0] instrs [0:M4_NUM_INSTRS-1]; assign DATA = instrs[ADDR[$clog2($size(instrs)) + 1 : 2]]; assign instrs = '{m4_instr0['']m4_forloop(['m4_instr_ind'], 1, M4_NUM_INSTRS, [', m4_echo(['m4_instr']m4_instr_ind)'])};'])
    m4_define(['m4_asm_end_tlv'], ['`define READONLY_MEM(ADDR, DATA) logic [31:0] instrs [0:M4_NUM_INSTRS-1]; assign DATA \= instrs[ADDR[\$clog2(\$size(instrs)) + 1 : 2]]; assign instrs \= '{m4_instr0['']m4_forloop(['m4_instr_ind'], 1, M4_NUM_INSTRS, [', m4_echo(['m4_instr']m4_instr_ind)'])};'])
 '])
 
+\TLV test_prog()
+   m4_test_prog()
 
 // Register File
 \TLV rf(_entries, _width, $_reset, $_port1_en, $_port1_index, $_port1_data, $_port2_en, $_port2_index, $_port2_data, $_port3_en, $_port3_index, $_port3_data)
@@ -633,97 +727,6 @@ m4+definitions(['
                   (! $reset && $next_pc[31:0] == $pc[31:0]);
    *passed = >>2$passed_cond;
 
-\TLV test_prog()
-   // /=======================\
-   // | Test each instruction |
-   // \=======================/
-   //
-   // Some constant values to use as operands.
-   m4_asm(ADDI, x1, x0, 10101)           // An operand value of 21.
-   m4_asm(ADDI, x2, x0, 111)             // An operand value of 7.
-   m4_asm(ADDI, x3, x0, 111111111100)    // An operand value of -4.
-   // Execute one of each instruction, XORing subtracting (via ADDI) the expected value.
-   // ANDI:
-   m4_asm(ANDI, x5, x1, 1011100)
-   m4_asm(XORI, x5, x5, 10101)
-   // ORI:
-   m4_asm(ORI, x6, x1, 1011100)
-   m4_asm(XORI, x6, x6, 1011100)
-   // ADDI:
-   m4_asm(ADDI, x7, x1, 111)
-   m4_asm(XORI, x7, x7, 11101)
-   // ADDI:
-   m4_asm(SLLI, x8, x1, 110)
-   m4_asm(XORI, x8, x8, 10101000001)
-   // SLLI:
-   m4_asm(SRLI, x9, x1, 10)
-   m4_asm(XORI, x9, x9, 100)
-   // AND:
-   m4_asm(AND, r10, x1, x2)
-   m4_asm(XORI, x10, x10, 100)
-   // OR:
-   m4_asm(OR, x11, x1, x2)
-   m4_asm(XORI, x11, x11, 10110)
-   // XOR:
-   m4_asm(XOR, x12, x1, x2)
-   m4_asm(XORI, x12, x12, 10011)
-   // ADD:
-   m4_asm(ADD, x13, x1, x2)
-   m4_asm(XORI, x13, x13, 11101)
-   // SUB:
-   m4_asm(SUB, x14, x1, x2)
-   m4_asm(XORI, x14, x14, 1111)
-   // SLL:
-   m4_asm(SLL, x15, x2, x2)
-   m4_asm(XORI, x15, x15, 1110000001)
-   // SRL:
-   m4_asm(SRL, x16, x1, x2)
-   m4_asm(XORI, x16, x16, 1)
-   // SLTU:
-   m4_asm(SLTU, x17, x2, x1)
-   m4_asm(XORI, x17, x17, 0)
-   // SLTIU:
-   m4_asm(SLTIU, x18, x2, 10101)
-   m4_asm(XORI, x18, x18, 0)
-   // LUI:
-   m4_asm(LUI, x19, 0)
-   m4_asm(XORI, x19, x19, 1)
-   // SRAI:
-   m4_asm(SRAI, x20, x3, 1)
-   m4_asm(XORI, x20, x20, 111111111111)
-   // SLT:
-   m4_asm(SLT, x21, x3, x1)
-   m4_asm(XORI, x21, x21, 0)
-   // SLTI:
-   m4_asm(SLTI, x22, x3, 1)
-   m4_asm(XORI, x22, x22, 0)
-   // SRA:
-   m4_asm(SRA, x23, x1, x2)
-   m4_asm(XORI, x23, x23, 1)
-   // AUIPC:
-   m4_asm(AUIPC, x4, 100)
-   m4_asm(SRLI, x24, x4, 111)
-   m4_asm(XORI, x24, x24, 10000000)
-   // JAL:
-   m4_asm(JAL, x25, 10)     // x25 = PC of next instr
-   m4_asm(AUIPC, x4, 0)     // x4 = PC
-   m4_asm(XOR, x25, x25, x4)  # AUIPC and JAR results are the same.
-   m4_asm(XORI, x25, x25, 1)
-   // JALR:
-   m4_asm(JALR, x26, x4, 10000)
-   m4_asm(SUB, x26, x26, x4)        // JALR PC+4 - AUIPC PC
-   m4_asm(ADDI, x26, x26, 111111110001)  // - 4 instrs, + 1
-   // SW & LW:
-   m4_asm(SW, x2, x1, 1)
-   m4_asm(LW, x27, x2, 1)
-   m4_asm(XORI, x27, x27, 10100)
-   // Write 1 to remaining registers prior to x30 just to avoid concern.
-   m4_asm(ADDI, x28, x0, 1)
-   m4_asm(ADDI, x29, x0, 1)
-   // Terminate with success condition (regardless of correctness of register values):
-   m4_asm(ADDI, x30, x0, 1)
-   m4_asm(JAL, x0, 0) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
-   m4_asm_end_tlv()
 
 // (A copy of this appears in the shell code.)
 \TLV sum_prog()
