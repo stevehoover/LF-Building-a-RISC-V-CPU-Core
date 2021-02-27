@@ -18,7 +18,7 @@
    // ----------------------------------
    
    // Include solutions.
-   m4_include_makerchip_hidden(['LF_workshop_solutions.private.tlv'])       
+   m4_include_makerchip_hidden(['LF_workshop_solutions.private.tlv'])
 
 \SV
    // Macro providing required top-level module definition, random

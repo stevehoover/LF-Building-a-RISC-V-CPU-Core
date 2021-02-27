@@ -114,7 +114,7 @@ m4+definitions(['
 '])
 
 \TLV test_prog()
-   m4_test_prog()
+   m4_test_prog(['TLV'])
 
 // Register File
 \TLV rf(_entries, _width, $_reset, $_port1_en, $_port1_index, $_port1_data, $_port2_en, $_port2_index, $_port2_data, $_port3_en, $_port3_index, $_port3_data)

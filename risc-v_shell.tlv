@@ -6,7 +6,7 @@
    m4_include_lib(['https://raw.githubusercontent.com/stevehoover/LF-Building-a-RISC-V-CPU-Core/main/lib/risc-v_shell_lib.tlv'])
 
 
-                   
+
    //---------------------------------------------------------------------------------
    // /====================\
    // | Sum 1 to 9 Program |
@@ -34,10 +34,11 @@
    m4_define(['M4_MAX_CYC'], 50)
    //---------------------------------------------------------------------------------
 
-                   
+
 
 \SV
    m4_makerchip_module   // (Expanded in Nav-TLV pane.)
+   
 \TLV
    
    $reset = *reset;
