@@ -38,7 +38,7 @@
 
 \SV
    m4_makerchip_module   // (Expanded in Nav-TLV pane.)
-   
+   /* verilator lint_on WIDTH */
 \TLV
    
    $reset = *reset;
