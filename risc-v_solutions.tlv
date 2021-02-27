@@ -32,7 +32,7 @@
    //=================/
    
    // Specify which lab you are on by providing a macro argument...
-   m4+hidden_solution(START)
+   m4+solution(START)
    // ...from these:
    // Chapter 4:
    //    START, PC, IMEM, INSTR_TYPE, FIELDS, IMM, SUBSET_INSTRS,
