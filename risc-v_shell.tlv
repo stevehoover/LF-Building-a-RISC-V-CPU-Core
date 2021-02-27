@@ -54,7 +54,6 @@
    
    //m4+rf(32, 32, $reset, $wr_en, $wr_index, $wr_data, $rd1_en, $rd1_index, $rd1_data, $rd2_en, $rd2_index, $rd2_data)
    //m4+dmem(32, 32, $reset, $wr_en, $wr_addr, $wr_data, $rd_en, $rd_addr, $wr_data)
-   //m4+test_prog()
    m4+cpu_viz()
 \SV
    endmodule
