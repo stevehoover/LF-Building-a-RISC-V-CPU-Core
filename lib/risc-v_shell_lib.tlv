@@ -98,6 +98,8 @@ m4+definitions(['
      // Terminate with success condition (regardless of correctness of register values):
      m4_asm(ADDI, x30, x0, 1)
      m4_asm(JAL, x0, 0) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
+     
+     m4_define(['M4_MAX_CYC'], 70)
      '])m4_ifelse(['$1'], [''], ['m4_asm_end()'], ['m4_asm_end_tlv()'])'])
    
    m4_define_vector(['M4_WORD'], 32)
