@@ -183,22 +183,21 @@ m4+definitions(['
          }
          
 // Data Memory
-\TLV dmem(_entries, _width, $_reset, $_port1_en, $_port1_index, $_port1_data, $_port2_en, $_port2_index, $_port2_data)
+\TLV dmem(_entries, _width, $_reset, $_addr, $_port1_en, $_port1_data, $_port2_en, $_port2_data)
    // Allow expressions for most inputs, so define input signals.
-   $dmem1_wr_en = m4_argn(4, $@);
-   $dmem1_wr_index[\$clog2(_entries)-1:0] = m4_argn(5, $@);
-   $dmem1_wr_data[_width-1:0] = m4_argn(6, $@);
+   $dmem1_wr_en = $_port1_en;
+   $dmem1_addr[\$clog2(_entries)-1:0] = $_addr;
+   $dmem1_wr_data[_width-1:0] = $_port1_data;
    
-   $dmem1_rd_en = m4_argn(7, $@);
-   $dmem1_rd_index[\$clog2(_entries)-1:0] = m4_argn(8, $@);
+   $dmem1_rd_en = $_port2_en;
    
    /dmem[m4_eval(_entries-1):0]
-      $wr = /top$dmem1_wr_en && (/top$dmem1_wr_index == #dmem);
+      $wr = /top$dmem1_wr_en && (/top$dmem1_addr == #dmem);
       <<1$value[_width-1:0] = /top$_reset ? 0                 :
                               $wr         ? /top$dmem1_wr_data :
                                             $RETAIN;
    
-   $_port2_data[_width-1:0] = $dmem1_rd_en ? /dmem[$dmem1_rd_index]$value : 'X;
+   $_port2_data[_width-1:0] = $dmem1_rd_en ? /dmem[$dmem1_addr]$value : 'X;
    /dmem[m4_eval(_entries-1):0]
       \viz_alpha
          initEach: function() {
@@ -208,13 +207,12 @@ m4+definitions(['
             siggen = (name) => this.svSigRef(`${name}`) == null ? this.svSigRef(`sticky_zero`) : this.svSigRef(`${name}`);
             //
             let dmem_rd_en = siggen(`L0_dmem1_rd_en_a0`);
-            let dmem_rd_index = siggen(`L0_dmem1_rd_index_a0`);
-            let dmem_wr_index = siggen(`L0_dmem1_wr_index_a0`);
+            let dmem_addr = siggen(`L0_dmem1_addr_a0`);
             //
             let wr = siggen(`L1_Dmem[${this.getIndex()}].L1_wr_a0`);
             let value = siggen(`Dmem_value_a0(${this.getIndex()})`);
             //
-            let rd = dmem_rd_en.asBool() && dmem_rd_index.asInt() == this.getIndex();
+            let rd = dmem_rd_en.asBool() && dmem_addr.asInt() == this.getIndex();
             let mod = wr.asBool(false);
             let reg = parseInt(this.getIndex());
             let regIdent = reg.toString().padEnd(2, " ");
@@ -437,9 +435,8 @@ m4+definitions(['
             let rf_wr_index   =   siggen_rf_dmem("rf1_wr_index")
             let rf_wr_data    =   siggen_rf_dmem("rf1_wr_data")
             let dmem_rd_en    =   siggen_rf_dmem("dmem1_rd_en")
-            let dmem_rd_index =   siggen_rf_dmem("dmem1_rd_index")
             let dmem_wr_en    =   siggen_rf_dmem("dmem1_wr_en")
-            let dmem_wr_index =   siggen_rf_dmem("dmem1_wr_index")
+            let dmem_addr     =   siggen_rf_dmem("dmem1_addr")
             
             if (instr != sticky_zero) {
                this.getInitObjects().imem_box.setVisible(true)
@@ -491,12 +488,12 @@ m4+definitions(['
                strokeWidth: 3,
                visible: rf_wr_en.asBool()
             })
-            let ld_arrow = new fabric.Line([490, 18 * dmem_rd_index.asInt() + 6 - 40, 168, 75 + 18 * 0], {
+            let ld_arrow = new fabric.Line([490, 18 * dmem_addr.asInt() + 6 - 40, 168, 75 + 18 * 0], {
                stroke: "#b0c8df",
                strokeWidth: 2,
                visible: dmem_rd_en.asBool()
             })
-            let st_arrow = new fabric.Line([490, 18 * dmem_wr_index.asInt() + 6 - 40, 190, 75 + 18 * 3], {
+            let st_arrow = new fabric.Line([490, 18 * dmem_addr.asInt() + 6 - 40, 190, 75 + 18 * 3], {
                stroke: "#b0b0df",
                strokeWidth: 3,
                visible: dmem_wr_en.asBool()
@@ -585,7 +582,7 @@ m4+definitions(['
             
             let load_viz = new fabric.Text(ld_data.asInt(0).toString(M4_VIZ_BASE), {
                left: 470,
-               top: 18 * dmem_rd_index.asInt() + 6 - 40,
+               top: 18 * dmem_addr.asInt() + 6 - 40,
                fill: "blue",
                fontSize: 14,
                fontFamily: "monospace",
@@ -617,7 +614,7 @@ m4+definitions(['
             if (dmem_wr_en.asBool()) {
                setTimeout(() => {
                   store_viz.setVisible(true)
-                  store_viz.animate({left: 515, top: 18 * dmem_wr_index.asInt() - 40}, {
+                  store_viz.animate({left: 515, top: 18 * dmem_addr.asInt() - 40}, {
                     onChange: this.global.canvas.renderAll.bind(this.global.canvas),
                     duration: 500
                   })
