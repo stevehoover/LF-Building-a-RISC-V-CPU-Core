@@ -18,7 +18,6 @@
    // ----------------------------------
    
    // Include solutions.
-   m4_define(['M4_FMT_NO_SOURCE'], 1)
    m4_include_makerchip_hidden(['LF_workshop_solutions.private.tlv'])
 
 \SV
@@ -26,8 +25,6 @@
    // stimulus support, and Verilator config.
    m4_makerchip_module   // (Expanded in Nav-TLV pane.)
 \TLV
-   \source ./LFworkshopsolutions.private.tlv 7
-   \end_source
    
    //=================\
    // Choose Your Lab |
