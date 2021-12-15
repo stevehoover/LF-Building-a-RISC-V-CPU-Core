@@ -710,7 +710,7 @@ m4+definitions(['
                   let instr = this.svSigRef(`instrs(${this.getIndex()})`)
                   if (instr) {
                      let binary_str = instr.goToSimStart().asBinaryStr("")
-                     this.getInitObject("binary").set(text: binary_str})
+                     this.getInitObject("binary").set({text: binary_str})
                   }
                   let disassembled = this.svSigRef(`instr_strs(${this.getIndex()})`)
                   if (disassembled) {
