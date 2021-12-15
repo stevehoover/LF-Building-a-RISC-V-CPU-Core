@@ -672,8 +672,8 @@ m4+definitions(['
             // Missing signals
             if (missing_list[0]) {
                this.getInitObject("missing_sigs").setVisible(true)
-               this.fromInit().missing_col1.setText(missing_list[0])
-               this.fromInit().missing_col2.setText(missing_list[1])
+               this.fromInit().missing_col1.set({text: missing_list[0]})
+               this.fromInit().missing_col2.set({text: missing_list[1]})
             }
             return {objects: [pcPointer, pc_arrow, ...type_texts, rs1_arrow, rs2_arrow, rd_arrow, instrWithValues, fetch_instr_viz, src1_value_viz, src2_value_viz, result_shadow, result_viz, ld_arrow, st_arrow, load_viz, store_viz]};
          }
@@ -710,13 +710,13 @@ m4+definitions(['
                   let instr = this.svSigRef(`instrs(${this.getIndex()})`)
                   if (instr) {
                      let binary_str = instr.goToSimStart().asBinaryStr("")
-                     this.getInitObject("binary").setText(binary_str)
+                     this.getInitObject("binary").set(text: binary_str})
                   }
                   let disassembled = this.svSigRef(`instr_strs(${this.getIndex()})`)
                   if (disassembled) {
                      let disassembled_str = disassembled.goToSimStart().asString("")
                      disassembled_str = disassembled_str.slice(0, -5)
-                     this.getInitObject("disassembled").setText(disassembled_str)
+                     this.getInitObject("disassembled").set({text: disassembled_str})
                   }
                }
                this.getInitObject("disassembled").set({textBackgroundColor: rd_viz ? "#b0ffff" : "white"})

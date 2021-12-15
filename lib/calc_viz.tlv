@@ -208,18 +208,18 @@
                result[sig_name] = getSig(sig_name)
                return result
             }, {})
-            this.getInitObject("val1num").setText(sigs.val1.asInt(NaN).toString(16).padStart(8, " "))
-            this.getInitObject("val2num").setText(sigs.val2.asInt(NaN).toString(16).padStart(8, " "))
-            this.getInitObject("outnum").setText(sigs.out.asInt(NaN).toString(16).padStart(8, " "))
+            this.getInitObject("val1num").set({text: sigs.val1.asInt(NaN).toString(16).padStart(8, " ")})
+            this.getInitObject("val2num").set({text: sigs.val2.asInt(NaN).toString(16).padStart(8, " ")})
+            this.getInitObject("outnum").set({text: sigs.out.asInt(NaN).toString(16).padStart(8, " ")})
             let op = sigs.op.asInt(NaN)
-            this.getInitObject("sumbox").setFill(op == 0 ?  "#c0d0e0" : "#a0a0a0")
-            this.getInitObject("minbox").setFill(op == 1 ?  "#c0d0e0" : "#a0a0a0")
-            this.getInitObject("prodbox").setFill(op == 2 ? "#c0d0e0" : "#a0a0a0")
-            this.getInitObject("quotbox").setFill(op == 3 ? "#c0d0e0" : "#a0a0a0")
+            this.getInitObject("sumbox").set({fill: op == 0 ?  "#c0d0e0" : "#a0a0a0"})
+            this.getInitObject("minbox").set({fill: op == 1 ?  "#c0d0e0" : "#a0a0a0"})
+            this.getInitObject("prodbox").set({fill: op == 2 ? "#c0d0e0" : "#a0a0a0"})
+            this.getInitObject("quotbox").set({fill: op == 3 ? "#c0d0e0" : "#a0a0a0"})
             if (missing_list) {
-               this.getInitObject("calbox").setFill("red")
-               this.getInitObject("missing_sigs").setVisible(true)
-               this.fromInit().missing.setText(missing_list)
+               this.getInitObject("calbox").set({fill: "red"})
+               this.getInitObject("missing_sigs").set({visible:true})
+               this.fromInit().missing.set({text: missing_list})
             }
          }
 \TLV
