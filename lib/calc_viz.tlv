@@ -1,12 +1,5 @@
 \m4_TLV_version 1d: tl-x.org
 \SV
-
-   // =========================================
-   // Welcome!  Try the tutorials via the menu.
-   // =========================================
-
-   // Default Makerchip TL-Verilog Code Template
-   
    // Macro providing required top-level module definition, random
    // stimulus support, and Verilator config.
    m4_makerchip_module   // (Expanded in Nav-TLV pane.)
@@ -14,13 +7,13 @@
 
 // Visualization for calculator
 \TLV calc_viz()
-   // m4_ifelse_block(m4_sp_graph_dangerous, 1, , {{
    \SV_plus
       logic sticky_zero;
       assign sticky_zero = 0;
    /view
-      \viz_alpha
-         initEach() {
+      \viz_js
+         box: {strokeWidth: 0},
+         init() {
             let hexcalname = new fabric.Text("HEX Calc 3000", {
               left: -150 + 150,
               top: -150 + 40,
@@ -157,7 +150,7 @@
               fontSize: 22,
               fontFamily: "Courier New",
             })
-            let missing = new fabric.Text("", {
+            this.missing = new fabric.Text("", {
                   top: 360,
                   left: -160,
                   fontSize: 16,
@@ -182,24 +175,23 @@
                   height: 300,
                   stroke: "black"
                 }),
-                missing
+                this.missing
                ],
                {visible: false}
               )
             
-            return {missing,
-                    objects: {calbox, val1box, val1num, val2box, val2num,
-                              outbox, outnum, equalname, sumbox, minbox, prodbox, quotbox, sumicon,
-                              prodicon, minicon: minicon, quoticon: quoticon, hexcalname, missing_sigs}};
+            return {calbox, val1box, val1num, val2box, val2num,
+                    outbox, outnum, equalname, sumbox, minbox, prodbox, quotbox, sumicon,
+                    prodicon, minicon: minicon, quoticon: quoticon, hexcalname, missing_sigs}
          },
-         renderEach() {
+         render() {
             let missing_list = "";
             let sig_names = ["op", "val1", "val2", "out"];
             let sticky_zero = this.svSigRef(`sticky_zero`);
             getSig = (name) => {
                let sig = this.svSigRef(`L0_${name}_a0`);
                if (sig == null) {
-                  missing_list += `◾ ${name}      \n`;
+                  missing_list += `◾ $${name}      \n`;
                   sig         = sticky_zero;
                }
                return sig;
@@ -208,18 +200,18 @@
                result[sig_name] = getSig(sig_name)
                return result
             }, {})
-            this.getInitObject("val1num").set({text: sigs.val1.asInt(NaN).toString(16).padStart(8, " ")})
-            this.getInitObject("val2num").set({text: sigs.val2.asInt(NaN).toString(16).padStart(8, " ")})
-            this.getInitObject("outnum").set({text: sigs.out.asInt(NaN).toString(16).padStart(8, " ")})
+            this.getObjects().val1num.set({text: sigs.val1.asInt(NaN).toString(16).padStart(8, " ")})
+            this.getObjects().val2num.set({text: sigs.val2.asInt(NaN).toString(16).padStart(8, " ")})
+            this.getObjects().outnum.set({text: sigs.out.asInt(NaN).toString(16).padStart(8, " ")})
             let op = sigs.op.asInt(NaN)
-            this.getInitObject("sumbox").set({fill: op == 0 ?  "#c0d0e0" : "#a0a0a0"})
-            this.getInitObject("minbox").set({fill: op == 1 ?  "#c0d0e0" : "#a0a0a0"})
-            this.getInitObject("prodbox").set({fill: op == 2 ? "#c0d0e0" : "#a0a0a0"})
-            this.getInitObject("quotbox").set({fill: op == 3 ? "#c0d0e0" : "#a0a0a0"})
+            this.getObjects().sumbox.set({fill: op == 0 ?  "#c0d0e0" : "#a0a0a0"})
+            this.getObjects().minbox.set({fill: op == 1 ?  "#c0d0e0" : "#a0a0a0"})
+            this.getObjects().prodbox.set({fill: op == 2 ? "#c0d0e0" : "#a0a0a0"})
+            this.getObjects().quotbox.set({fill: op == 3 ? "#c0d0e0" : "#a0a0a0"})
             if (missing_list) {
-               this.getInitObject("calbox").set({fill: "red"})
-               this.getInitObject("missing_sigs").set({visible:true})
-               this.fromInit().missing.set({text: missing_list})
+               this.getObjects().calbox.set({fill: "red"})
+               this.getObjects().missing_sigs.set({visible:true})
+               this.missing.set({text: missing_list})
             }
          }
 \TLV
