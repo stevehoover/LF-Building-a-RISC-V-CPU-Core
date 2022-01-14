@@ -142,11 +142,9 @@ m4+definitions(['
    $_port3_data[_width-1:0]  =  $rf1_rd_en2 ? /xreg[$rf1_rd_index2]$value : 'X;
    
    /xreg[m4_eval(_entries-1):0]
-      \viz_alpha
-         initEach: function() {
-            return {}  // {objects: {reg: reg}};
-         },
-         renderEach: function() {
+      \viz_js
+         box: {width: 120, height: 18, strokeWidth: 0},
+         render() {
             siggen = (name) => this.svSigRef(`${name}`) == null ? this.svSigRef(`sticky_zero`) : this.svSigRef(`${name}`);
             
             let rf_rd_en1 = siggen(`L0_rf1_rd_en1_a0`)
@@ -165,8 +163,8 @@ m4+definitions(['
             let regIdent = reg.toString().padEnd(2, " ")
             let newValStr = (regIdent + ": ").padEnd(14, " ")
             let reg_str = new fabric.Text((regIdent + ": " + value.asInt(NaN).toString(M4_VIZ_BASE)).padEnd(14, " "), {
-               top: 18 * this.getIndex() - 40,
-               left: 316,
+               top: 0,
+               left: 0,
                fontSize: 14,
                fill: mod ? "blue" : "black",
                fontWeight: mod ? 800 : 400,
@@ -179,8 +177,9 @@ m4+definitions(['
                   this.global.canvas.renderAll()
                }, 1500)
             }
-            return {objects: [reg_str]}
-         }
+            return [reg_str]
+         },
+         where: {left: 316, top: -40}
          
 // Data Memory
 \TLV dmem(_entries, _width, $_reset, $_addr, $_port1_en, $_port1_data, $_port2_en, $_port2_data)
@@ -199,11 +198,9 @@ m4+definitions(['
    
    $_port2_data[_width-1:0] = $dmem1_rd_en ? /dmem[$dmem1_addr]$value : 'X;
    /dmem[m4_eval(_entries-1):0]
-      \viz_alpha
-         initEach: function() {
-            return {}  // {objects: {reg: reg}};
-         },
-         renderEach: function() {
+      \viz_js
+         box: {width: 120, height: 18, strokeWidth: 0},
+         render() {
             siggen = (name) => this.svSigRef(`${name}`) == null ? this.svSigRef(`sticky_zero`) : this.svSigRef(`${name}`);
             //
             let dmem_rd_en = siggen(`L0_dmem1_rd_en_a0`);
@@ -218,8 +215,8 @@ m4+definitions(['
             let regIdent = reg.toString().padEnd(2, " ");
             let newValStr = (regIdent + ": ").padEnd(14, " ");
             let dmem_str = new fabric.Text((regIdent + ": " + value.asInt(NaN).toString(M4_VIZ_BASE)).padEnd(14, " "), {
-               top: 18 * this.getIndex() - 40,
-               left: 480,
+               top: 0,
+               left: 0,
                fontSize: 14,
                fill: mod ? "blue" : "black",
                fontWeight: mod ? 800 : 400,
@@ -232,8 +229,9 @@ m4+definitions(['
                   this.global.canvas.renderAll()
                }, 1500)
             }
-            return {objects: [dmem_str]}
-         }
+            return [dmem_str]
+         },
+         where: {left: 480, top: -40}
 
 \TLV cpu_viz()
    // String representations of the instructions for debug.
@@ -245,483 +243,479 @@ m4+definitions(['
       logic [40*8-1:0] instr_strs [0:M4_NUM_INSTRS];
       assign instr_strs = '{m4_asm_mem_expr "END                                     "};
    
-   /cpuviz
-      \viz_alpha
-         m4_define(['M4_IMEM_TOP'], ['m4_ifelse(m4_eval(M4_NUM_INSTRS > 16), 0, 0, m4_eval(0 - (M4_NUM_INSTRS - 16) * 18))'])
-         initEach() {
-            let imem_box = new fabric.Rect({
-                  top: M4_IMEM_TOP - 50,
-                  left: -700,
-                  fill: "#208028",
-                  width: 665,
-                  height: 76 + 18 * M4_NUM_INSTRS,
-                  stroke: "black",
-                  visible: false
-               })
-            let decode_box = new fabric.Rect({
-                  top: -25,
-                  left: -15,
-                  fill: "#f8f0e8",
-                  width: 280,
-                  height: 215,
-                  stroke: "#ff8060",
-                  visible: false
-               })
-            let rf_box = new fabric.Rect({
-                  top: -90,
-                  left: 306,
-                  fill: "#2028b0",
-                  width: 145,
-                  height: 650,
-                  stroke: "black",
-                  visible: false
-               })
-            let dmem_box = new fabric.Rect({
-                  top: -90,
-                  left: 470,
-                  fill: "#208028",
-                  width: 145,
-                  height: 650,
-                  stroke: "black",
-                  visible: false
-               })
-            let imem_header = new fabric.Text("🗃️ IMem", {
-                  top: M4_IMEM_TOP - 35,
-                  left: -460,
-                  fontSize: 18,
-                  fontWeight: 800,
-                  fontFamily: "monospace",
-                  fill: "white",
-                  visible: false
-               })
-            let decode_header = new fabric.Text("⚙️ Instr. Decode", {
-                  top: -4,
-                  left: 20,
-                  fill: "maroon",
-                  fontSize: 18,
-                  fontWeight: 800,
-                  fontFamily: "monospace",
-                  visible: false
-               })
-            let rf_header = new fabric.Text("📂 RF", {
-                  top: -75,
-                  left: 316,
-                  fontSize: 18,
-                  fontWeight: 800,
-                  fontFamily: "monospace",
-                  fill: "white",
-                  visible: false
-               })
-            let dmem_header = new fabric.Text("🗃️ DMem", {
-                  top: -75,
-                  left: 480,
-                  fontSize: 18,
-                  fontWeight: 800,
-                  fontFamily: "monospace",
-                  fill: "white",
-                  visible: false
-               })
-            
-            let passed = new fabric.Text("", {
-                  top: 340,
-                  left: -30,
-                  fontSize: 46,
-                  fontWeight: 800
-               })
-            let missing_col1 = new fabric.Text("", {
-                  top: 420,
-                  left: -480,
-                  fontSize: 16,
-                  fontWeight: 500,
-                  fontFamily: "monospace",
-                  fill: "purple"
-               })
-            let missing_col2 = new fabric.Text("", {
-                  top: 420,
-                  left: -300,
-                  fontSize: 16,
-                  fontWeight: 500,
-                  fontFamily: "monospace",
-                  fill: "purple"
-               })
-            let missing_sigs = new fabric.Group(
-               [new fabric.Text("🚨 To Be Implemented:", {
-                  top: 350,
-                  left: -466,
-                  fontSize: 18,
-                  fontWeight: 800,
-                  fill: "red",
-                  fontFamily: "monospace"
-               }),
-               new fabric.Rect({
-                  top: 400,
-                  left: -500,
-                  fill: "#ffffe0",
-                  width: 400,
-                  height: 300,
-                  stroke: "black"
-               }),
-               missing_col1,
-               missing_col2,
-              ],
-              {visible: false}
-            )
-            return {missing_col1, missing_col2,
-                    objects: {imem_box, decode_box, rf_box, dmem_box, imem_header, decode_header, rf_header, dmem_header, passed, missing_sigs}};
-         },
-         renderEach() {
-            // Strings (2 columns) of missing signals.
-            var missing_list = ["", ""]
-            var missing_cnt = 0
-            let sticky_zero = this.svSigRef(`sticky_zero`);  // A default zero-valued signal.
-            // Attempt to look up a signal, using sticky_zero as default and updating missing_list if expected.
-            siggen = (name, full_name, expected = true) => {
-               var sig = this.svSigRef(full_name ? full_name : `L0_${name}_a0`)
-               if (sig == null) {
-                  sig         = sticky_zero;
-                  if (expected) {
-                     missing_list[missing_cnt > 11 ? 1 : 0] += `◾ $${name}      \n`;
-                     missing_cnt++
-                  }
-               }
-               return sig
-            }
-            // Look up signal, and it's ok if it doesn't exist.
-            siggen_rf_dmem = (name, scope) => {
-               return siggen(name, scope, false)
-            }
-            
-            // Determine which is_xxx signal is asserted.
-            siggen_mnemonic = () => {
-               let instrs = ["lui", "auipc", "jal", "jalr", "beq", "bne", "blt", "bge", "bltu", "bgeu", "lb", "lh", "lw", "lbu", "lhu", "sb", "sh", "sw", "addi", "slti", "sltiu", "xori", "ori", "andi", "slli", "srli", "srai", "add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and", "csrrw", "csrrs", "csrrc", "csrrwi", "csrrsi", "csrrci", "load", "s_instr"];
-               for(i=0;i<instrs.length;i++) {
-                  var sig = this.svSigRef(`L0_is_${instrs[i]}_a0`)
-                  if(sig != null && sig.asBool()) {
-                     return instrs[i].toUpperCase()
-                  }
-               }
-               return "ILLEGAL"
-            }
-            
-            let pc            =   siggen("pc")
-            let instr         =   siggen("instr")
-            let types = {I: siggen("is_i_instr"),
-                         R: siggen("is_r_instr"),
-                         S: siggen("is_s_instr"),
-                         B: siggen("is_b_instr"),
-                         J: siggen("is_j_instr"),
-                         U: siggen("is_u_instr"),
-                        }
-            let rd_valid      =   siggen("rd_valid")
-            let rd            =   siggen("rd")
-            let result        =   siggen("result")
-            let src1_value    =   siggen("src1_value")
-            let src2_value    =   siggen("src2_value")
-            let imm           =   siggen("imm")
-            let imm_valid     =   siggen("imm_valid")
-            let rs1           =   siggen("rs1")
-            let rs2           =   siggen("rs2")
-            let rs1_valid     =   siggen("rs1_valid")
-            let rs2_valid     =   siggen("rs2_valid")
-            let ld_data       =   siggen("ld_data")
-            let mnemonic      =   siggen_mnemonic()
-            let passed        =   siggen("passed_cond", false, false)
-            
-            let rf_rd_en1     =   siggen_rf_dmem("rf1_rd_en1")
-            let rf_rd_index1  =   siggen_rf_dmem("rf1_rd_index1")
-            let rf_rd_en2     =   siggen_rf_dmem("rf1_rd_en2")
-            let rf_rd_index2  =   siggen_rf_dmem("rf1_rd_index2")
-            let rf_wr_en      =   siggen_rf_dmem("rf1_wr_en")
-            let rf_wr_index   =   siggen_rf_dmem("rf1_wr_index")
-            let rf_wr_data    =   siggen_rf_dmem("rf1_wr_data")
-            let dmem_rd_en    =   siggen_rf_dmem("dmem1_rd_en")
-            let dmem_wr_en    =   siggen_rf_dmem("dmem1_wr_en")
-            let dmem_addr     =   siggen_rf_dmem("dmem1_addr")
-            
-            if (instr != sticky_zero) {
-               this.getInitObjects().imem_box.setVisible(true)
-               this.getInitObjects().imem_header.setVisible(true)
-               this.getInitObjects().decode_box.setVisible(true)
-               this.getInitObjects().decode_header.setVisible(true)
-            }
-            let pcPointer = new fabric.Text("👉", {
-               top: M4_IMEM_TOP + 18 * (pc.asInt() / 4),
-               left: -375,
-               fill: "blue",
-               fontSize: 14,
-               fontFamily: "monospace",
-               visible: pc != sticky_zero
+   \viz_js
+      m4_define(['M4_IMEM_TOP'], ['m4_ifelse(m4_eval(M4_NUM_INSTRS > 16), 0, 0, m4_eval(0 - (M4_NUM_INSTRS - 16) * 18))'])
+      box: {strokeWidth: 0},
+      init() {
+         let imem_box = new fabric.Rect({
+               top: M4_IMEM_TOP - 50,
+               left: -700,
+               fill: "#208028",
+               width: 665,
+               height: 76 + 18 * M4_NUM_INSTRS,
+               stroke: "black",
+               visible: false
             })
-            let pc_arrow = new fabric.Line([-57, M4_IMEM_TOP + 18 * (pc.asInt() / 4) + 6, 6, 35], {
-               stroke: "#b0c8df",
-               strokeWidth: 2,
-               visible: instr != sticky_zero
+         let decode_box = new fabric.Rect({
+               top: -25,
+               left: -15,
+               fill: "#f8f0e8",
+               width: 280,
+               height: 215,
+               stroke: "#ff8060",
+               visible: false
             })
-            
-            // Display instruction type(s)
-            let type_texts = []
-            for (const [type, sig] of Object.entries(types)) {
-               if (sig.asBool()) {
-                  type_texts.push(
-                     new fabric.Text(`(${type})`, {
-                        top: 60,
-                        left: 10,
-                        fill: "blue",
-                        fontSize: 20,
-                        fontFamily: "monospace"
-                     })
-                  )
-               }
-            }
-            let rs1_arrow = new fabric.Line([330, 18 * rf_rd_index1.asInt() + 6 - 40, 190, 75 + 18 * 2], {
-               stroke: "#b0c8df",
-               strokeWidth: 2,
-               visible: rf_rd_en1.asBool()
+         let rf_box = new fabric.Rect({
+               top: -90,
+               left: 306,
+               fill: "#2028b0",
+               width: 145,
+               height: 650,
+               stroke: "black",
+               visible: false
             })
-            let rs2_arrow = new fabric.Line([330, 18 * rf_rd_index2.asInt() + 6 - 40, 190, 75 + 18 * 3], {
-               stroke: "#b0c8df",
-               strokeWidth: 2,
-               visible: rf_rd_en2.asBool()
-            })
-            let rd_arrow = new fabric.Line([330, 18 * rf_wr_index.asInt() + 6 - 40, 168, 75 + 18 * 0], {
-               stroke: "#b0b0df",
-               strokeWidth: 3,
-               visible: rf_wr_en.asBool()
-            })
-            let ld_arrow = new fabric.Line([490, 18 * dmem_addr.asInt() + 6 - 40, 168, 75 + 18 * 0], {
-               stroke: "#b0c8df",
-               strokeWidth: 2,
-               visible: dmem_rd_en.asBool()
-            })
-            let st_arrow = new fabric.Line([490, 18 * dmem_addr.asInt() + 6 - 40, 190, 75 + 18 * 3], {
-               stroke: "#b0b0df",
-               strokeWidth: 3,
-               visible: dmem_wr_en.asBool()
-            })
-            if (rf_rd_en1 != sticky_zero) {
-               this.getInitObjects().rf_box.setVisible(true)
-               this.getInitObjects().rf_header.setVisible(true)
-            }
-            if (dmem_rd_en != sticky_zero) {
-               this.getInitObjects().dmem_box.setVisible(true)
-               this.getInitObjects().dmem_header.setVisible(true)
-            }
-            
-            
-            // Instruction with values
-            
-            let regStr = (valid, regNum, regValue) => {
-               return valid ? `x${regNum}` : `xX`  // valid ? `x${regNum} (${regValue})` : `xX`
-            }
-            let immStr = (valid, immValue) => {
-               immValue = parseInt(immValue,2) + 2*(immValue[0] << 31)
-               return valid ? `i[${immValue}]` : ``;
-            }
-            let srcStr = ($src, $valid, $reg, $value) => {
-               return $valid.asBool(false)
-                          ? `\n      ${regStr(true, $reg.asInt(NaN), $value.asInt(NaN))}`
-                          : "";
-            }
-            let str = `${regStr(rd_valid.asBool(false), rd.asInt(NaN), result.asInt(NaN))}\n` +
-                      `  = ${mnemonic}${srcStr(1, rs1_valid, rs1, src1_value)}${srcStr(2, rs2_valid, rs2, src2_value)}\n` +
-                      `      ${immStr(imm_valid.asBool(false), imm.asBinaryStr("0"))}`;
-            let instrWithValues = new fabric.Text(str, {
-               top: 70,
-               left: 65,
-               fill: "blue",
-               fontSize: 14,
-               fontFamily: "monospace",
-               visible: instr != sticky_zero
-            })
-            
-            
-            // Animate fetch (and provide onChange behavior for other animation).
-            
-            let fetch_instr_str = siggen(`instr_strs(${pc.asInt() >> 2})`, `instr_strs(${pc.asInt() >> 2})`).asString("(?) UNKNOWN fetch instr").substr(4)
-            let fetch_instr_viz = new fabric.Text(fetch_instr_str, {
-               top: M4_IMEM_TOP + 18 * (pc.asInt() >> 2),
-               left: -352 + 8 * 4,
-               fill: "black",
-               fontSize: 14,
-               fontFamily: "monospace",
-               visible: instr != sticky_zero
-            })
-            fetch_instr_viz.animate({top: 32, left: 10}, {
-                 onChange: this.global.canvas.renderAll.bind(this.global.canvas),
-                 duration: 500
-            })
-            
-            // Animate RF value read/write.
-            
-            let src1_value_viz = new fabric.Text(src1_value.asInt(0).toString(M4_VIZ_BASE), {
-               left: 316 + 8 * 4,
-               top: 18 * rs1.asInt(0) - 40,
-               fill: "blue",
-               fontSize: 14,
-               fontFamily: "monospace",
-               fontWeight: 800,
-               visible: (src1_value != sticky_zero) && rs1_valid.asBool(false)
-            })
-            setTimeout(() => {src1_value_viz.animate({left: 166, top: 70 + 18 * 2}, {
-                 onChange: this.global.canvas.renderAll.bind(this.global.canvas),
-                 duration: 500
-            })}, 500)
-            let src2_value_viz = new fabric.Text(src2_value.asInt(0).toString(M4_VIZ_BASE), {
-               left: 316 + 8 * 4,
-               top: 18 * rs2.asInt(0) - 40,
-               fill: "blue",
-               fontSize: 14,
-               fontFamily: "monospace",
-               fontWeight: 800,
-               visible: (src2_value != sticky_zero) && rs2_valid.asBool(false)
-            })
-            setTimeout(() => {src2_value_viz.animate({left: 166, top: 70 + 18 * 3}, {
-                 onChange: this.global.canvas.renderAll.bind(this.global.canvas),
-                 duration: 500
-            })}, 500)
-            
-            let load_viz = new fabric.Text(ld_data.asInt(0).toString(M4_VIZ_BASE), {
+         let dmem_box = new fabric.Rect({
+               top: -90,
                left: 470,
-               top: 18 * dmem_addr.asInt() + 6 - 40,
-               fill: "blue",
-               fontSize: 14,
-               fontFamily: "monospace",
-               fontWeight: 1000,
+               fill: "#208028",
+               width: 145,
+               height: 650,
+               stroke: "black",
                visible: false
             })
-            if (dmem_rd_en.asBool()) {
-               setTimeout(() => {
-                  load_viz.setVisible(true)
-                  load_viz.animate({left: 146, top: 70}, {
-                    onChange: this.global.canvas.renderAll.bind(this.global.canvas),
-                    duration: 500
-                  })
-                  setTimeout(() => {
-                     load_viz.setVisible(false)
-                     }, 500)
-               }, 500)
-            }
-            
-            let store_viz = new fabric.Text(src2_value.asInt(0).toString(M4_VIZ_BASE), {
-               left: 166,
-               top: 70 + 18 * 3,
-               fill: "blue",
-               fontSize: 14,
-               fontFamily: "monospace",
-               fontWeight: 1000,
-               visible: false
-            })
-            if (dmem_wr_en.asBool()) {
-               setTimeout(() => {
-                  store_viz.setVisible(true)
-                  store_viz.animate({left: 515, top: 18 * dmem_addr.asInt() - 40}, {
-                    onChange: this.global.canvas.renderAll.bind(this.global.canvas),
-                    duration: 500
-                  })
-               }, 1000)
-            }
-            
-            let result_shadow = new fabric.Text(result.asInt(0).toString(M4_VIZ_BASE), {
-               left: 146,
-               top: 70,
-               fill: "#b0b0df",
-               fontSize: 14,
-               fontFamily: "monospace",
+         let imem_header = new fabric.Text("🗃️ IMem", {
+               top: M4_IMEM_TOP - 35,
+               left: -460,
+               fontSize: 18,
                fontWeight: 800,
-               visible: false
-            })
-            let result_viz = new fabric.Text(rf_wr_data.asInt(0).toString(M4_VIZ_BASE), {
-               left: 146,
-               top: 70,
-               fill: "blue",
-               fontSize: 14,
                fontFamily: "monospace",
-               fontWeight: 800,
+               fill: "white",
                visible: false
             })
-            if (rd_valid.asBool()) {
-               setTimeout(() => {
-                  result_viz.setVisible(rf_wr_data != sticky_zero && rf_wr_en.asBool())
-                  result_shadow.setVisible(result != sticky_zero)
-                  result_viz.animate({left: 317 + 8 * 4, top: 18 * rf_wr_index.asInt(0) - 40}, {
-                    onChange: this.global.canvas.renderAll.bind(this.global.canvas),
-                    duration: 500
-                  })
-               }, 1000)
+         let decode_header = new fabric.Text("⚙️ Instr. Decode", {
+               top: -4,
+               left: 20,
+               fill: "maroon",
+               fontSize: 18,
+               fontWeight: 800,
+               fontFamily: "monospace",
+               visible: false
+            })
+         let rf_header = new fabric.Text("📂 RF", {
+               top: -75,
+               left: 316,
+               fontSize: 18,
+               fontWeight: 800,
+               fontFamily: "monospace",
+               fill: "white",
+               visible: false
+            })
+         let dmem_header = new fabric.Text("🗃️ DMem", {
+               top: -75,
+               left: 480,
+               fontSize: 18,
+               fontWeight: 800,
+               fontFamily: "monospace",
+               fill: "white",
+               visible: false
+            })
+         
+         let passed = new fabric.Text("", {
+               top: 340,
+               left: -30,
+               fontSize: 46,
+               fontWeight: 800
+            })
+         this.missing_col1 = new fabric.Text("", {
+               top: 420,
+               left: -480,
+               fontSize: 16,
+               fontWeight: 500,
+               fontFamily: "monospace",
+               fill: "purple"
+            })
+         this.missing_col2 = new fabric.Text("", {
+               top: 420,
+               left: -300,
+               fontSize: 16,
+               fontWeight: 500,
+               fontFamily: "monospace",
+               fill: "purple"
+            })
+         let missing_sigs = new fabric.Group(
+            [new fabric.Text("🚨 To Be Implemented:", {
+               top: 350,
+               left: -466,
+               fontSize: 18,
+               fontWeight: 800,
+               fill: "red",
+               fontFamily: "monospace"
+            }),
+            new fabric.Rect({
+               top: 400,
+               left: -500,
+               fill: "#ffffe0",
+               width: 400,
+               height: 300,
+               stroke: "black"
+            }),
+            this.missing_col1,
+            this.missing_col2,
+           ],
+           {visible: false}
+         )
+         return {imem_box, decode_box, rf_box, dmem_box, imem_header, decode_header, rf_header, dmem_header, passed, missing_sigs}
+      },
+      render() {
+         // Strings (2 columns) of missing signals.
+         var missing_list = ["", ""]
+         var missing_cnt = 0
+         let sticky_zero = this.svSigRef(`sticky_zero`);  // A default zero-valued signal.
+         // Attempt to look up a signal, using sticky_zero as default and updating missing_list if expected.
+         siggen = (name, full_name, expected = true) => {
+            var sig = this.svSigRef(full_name ? full_name : `L0_${name}_a0`)
+            if (sig == null) {
+               sig         = sticky_zero;
+               if (expected) {
+                  missing_list[missing_cnt > 11 ? 1 : 0] += `◾ $${name}      \n`;
+                  missing_cnt++
+               }
             }
-            
-            // Lab completion
-            
-            // Passed?
-            this.getInitObject("passed").setVisible(false)
-            if (passed) {
-              if (passed.step(-1).asBool()) {
-                this.getInitObject("passed").set({visible: true, text:"Passed !!!", fill: "green"})
-              } else {
-                // Using an unstable API, so:
-                try {
-                  passed.goToSimEnd().step(-1)
-                  if (passed.asBool()) {
-                     this.getInitObject("passed").set({text:"Sim Passes", visible: true, fill: "lightgray"})
-                  }
-                } catch(e) {
-                }
-              }
-            }
-            
-            // Missing signals
-            if (missing_list[0]) {
-               this.getInitObject("missing_sigs").setVisible(true)
-               this.fromInit().missing_col1.set({text: missing_list[0]})
-               this.fromInit().missing_col2.set({text: missing_list[1]})
-            }
-            return {objects: [pcPointer, pc_arrow, ...type_texts, rs1_arrow, rs2_arrow, rd_arrow, instrWithValues, fetch_instr_viz, src1_value_viz, src2_value_viz, result_shadow, result_viz, ld_arrow, st_arrow, load_viz, store_viz]};
+            return sig
          }
-      
-      /imem[m4_eval(M4_NUM_INSTRS-1):0]
-         \viz_alpha
-            initEach() {
-              let binary = new fabric.Text("", {
-                 top: M4_IMEM_TOP + 18 * this.getIndex(),
-                 left: -680,
-                 fontSize: 14,
-                 fontFamily: "monospace",
-                 
-              })
-              let disassembled = new fabric.Text("", {
-                 top: M4_IMEM_TOP + 18 * this.getIndex(),
-                 left: -350,
-                 fontSize: 14,
-                 fontFamily: "monospace"
-              })
-              return {objects: {binary, disassembled}}
-            },
-            renderEach() {
-               // Instruction memory is constant, so just create it once.
-               let reset = this.svSigRef(`L0_reset_a0`)
-               let pc = this.svSigRef(`L0_pc_a0`)
-               let rd_viz = pc && !reset.asBool() && (pc.asInt() >> 2) == this.getIndex()
-               if (!global.instr_mem_drawn) {
-                  global.instr_mem_drawn = []
+         // Look up signal, and it's ok if it doesn't exist.
+         siggen_rf_dmem = (name, scope) => {
+            return siggen(name, scope, false)
+         }
+         
+         // Determine which is_xxx signal is asserted.
+         siggen_mnemonic = () => {
+            let instrs = ["lui", "auipc", "jal", "jalr", "beq", "bne", "blt", "bge", "bltu", "bgeu", "lb", "lh", "lw", "lbu", "lhu", "sb", "sh", "sw", "addi", "slti", "sltiu", "xori", "ori", "andi", "slli", "srli", "srai", "add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and", "csrrw", "csrrs", "csrrc", "csrrwi", "csrrsi", "csrrci", "load", "s_instr"];
+            for(i=0;i<instrs.length;i++) {
+               var sig = this.svSigRef(`L0_is_${instrs[i]}_a0`)
+               if(sig != null && sig.asBool()) {
+                  return instrs[i].toUpperCase()
                }
-               if (!global.instr_mem_drawn[this.getIndex()]) {
-                  global.instr_mem_drawn[this.getIndex()] = true
-                  
-                  let instr = this.svSigRef(`instrs(${this.getIndex()})`)
-                  if (instr) {
-                     let binary_str = instr.goToSimStart().asBinaryStr("")
-                     this.getInitObject("binary").set({text: binary_str})
-                  }
-                  let disassembled = this.svSigRef(`instr_strs(${this.getIndex()})`)
-                  if (disassembled) {
-                     let disassembled_str = disassembled.goToSimStart().asString("")
-                     disassembled_str = disassembled_str.slice(0, -5)
-                     this.getInitObject("disassembled").set({text: disassembled_str})
-                  }
-               }
-               this.getInitObject("disassembled").set({textBackgroundColor: rd_viz ? "#b0ffff" : "white"})
-               this.getInitObject("binary")      .set({textBackgroundColor: rd_viz ? "#b0ffff" : "white"})
             }
+            return "ILLEGAL"
+         }
+         
+         let pc            =   siggen("pc")
+         let instr         =   siggen("instr")
+         let types = {I: siggen("is_i_instr"),
+                      R: siggen("is_r_instr"),
+                      S: siggen("is_s_instr"),
+                      B: siggen("is_b_instr"),
+                      J: siggen("is_j_instr"),
+                      U: siggen("is_u_instr"),
+                     }
+         let rd_valid      =   siggen("rd_valid")
+         let rd            =   siggen("rd")
+         let result        =   siggen("result")
+         let src1_value    =   siggen("src1_value")
+         let src2_value    =   siggen("src2_value")
+         let imm           =   siggen("imm")
+         let imm_valid     =   siggen("imm_valid")
+         let rs1           =   siggen("rs1")
+         let rs2           =   siggen("rs2")
+         let rs1_valid     =   siggen("rs1_valid")
+         let rs2_valid     =   siggen("rs2_valid")
+         let ld_data       =   siggen("ld_data")
+         let mnemonic      =   siggen_mnemonic()
+         let passed        =   siggen("passed_cond", false, false)
+         
+         let rf_rd_en1     =   siggen_rf_dmem("rf1_rd_en1")
+         let rf_rd_index1  =   siggen_rf_dmem("rf1_rd_index1")
+         let rf_rd_en2     =   siggen_rf_dmem("rf1_rd_en2")
+         let rf_rd_index2  =   siggen_rf_dmem("rf1_rd_index2")
+         let rf_wr_en      =   siggen_rf_dmem("rf1_wr_en")
+         let rf_wr_index   =   siggen_rf_dmem("rf1_wr_index")
+         let rf_wr_data    =   siggen_rf_dmem("rf1_wr_data")
+         let dmem_rd_en    =   siggen_rf_dmem("dmem1_rd_en")
+         let dmem_wr_en    =   siggen_rf_dmem("dmem1_wr_en")
+         let dmem_addr     =   siggen_rf_dmem("dmem1_addr")
+         
+         if (instr != sticky_zero) {
+            this.getObjects().imem_box.set({visible: true})
+            this.getObjects().imem_header.set({visible: true})
+            this.getObjects().decode_box.set({visible: true})
+            this.getObjects().decode_header.set({visible: true})
+         }
+         let pcPointer = new fabric.Text("👉", {
+            top: M4_IMEM_TOP + 18 * (pc.asInt() / 4),
+            left: -375,
+            fill: "blue",
+            fontSize: 14,
+            fontFamily: "monospace",
+            visible: pc != sticky_zero
+         })
+         let pc_arrow = new fabric.Line([-57, M4_IMEM_TOP + 18 * (pc.asInt() / 4) + 6, 6, 35], {
+            stroke: "#b0c8df",
+            strokeWidth: 2,
+            visible: instr != sticky_zero
+         })
+         
+         // Display instruction type(s)
+         let type_texts = []
+         for (const [type, sig] of Object.entries(types)) {
+            if (sig.asBool()) {
+               type_texts.push(
+                  new fabric.Text(`(${type})`, {
+                     top: 60,
+                     left: 10,
+                     fill: "blue",
+                     fontSize: 20,
+                     fontFamily: "monospace"
+                  })
+               )
+            }
+         }
+         let rs1_arrow = new fabric.Line([330, 18 * rf_rd_index1.asInt() + 6 - 40, 190, 75 + 18 * 2], {
+            stroke: "#b0c8df",
+            strokeWidth: 2,
+            visible: rf_rd_en1.asBool()
+         })
+         let rs2_arrow = new fabric.Line([330, 18 * rf_rd_index2.asInt() + 6 - 40, 190, 75 + 18 * 3], {
+            stroke: "#b0c8df",
+            strokeWidth: 2,
+            visible: rf_rd_en2.asBool()
+         })
+         let rd_arrow = new fabric.Line([330, 18 * rf_wr_index.asInt() + 6 - 40, 168, 75 + 18 * 0], {
+            stroke: "#b0b0df",
+            strokeWidth: 3,
+            visible: rf_wr_en.asBool()
+         })
+         let ld_arrow = new fabric.Line([490, 18 * dmem_addr.asInt() + 6 - 40, 168, 75 + 18 * 0], {
+            stroke: "#b0c8df",
+            strokeWidth: 2,
+            visible: dmem_rd_en.asBool()
+         })
+         let st_arrow = new fabric.Line([490, 18 * dmem_addr.asInt() + 6 - 40, 190, 75 + 18 * 3], {
+            stroke: "#b0b0df",
+            strokeWidth: 3,
+            visible: dmem_wr_en.asBool()
+         })
+         if (rf_rd_en1 != sticky_zero) {
+            this.getObjects().rf_box.set({visible: true})
+            this.getObjects().rf_header.set({visible: true})
+         }
+         if (dmem_rd_en != sticky_zero) {
+            this.getObjects().dmem_box.set({visible: true})
+            this.getObjects().dmem_header.set({visible: true})
+         }
+         
+         
+         // Instruction with values
+         
+         let regStr = (valid, regNum, regValue) => {
+            return valid ? `x${regNum}` : `xX`  // valid ? `x${regNum} (${regValue})` : `xX`
+         }
+         let immStr = (valid, immValue) => {
+            immValue = parseInt(immValue,2) + 2*(immValue[0] << 31)
+            return valid ? `i[${immValue}]` : ``;
+         }
+         let srcStr = ($src, $valid, $reg, $value) => {
+            return $valid.asBool(false)
+                       ? `\n      ${regStr(true, $reg.asInt(NaN), $value.asInt(NaN))}`
+                       : "";
+         }
+         let str = `${regStr(rd_valid.asBool(false), rd.asInt(NaN), result.asInt(NaN))}\n` +
+                   `  = ${mnemonic}${srcStr(1, rs1_valid, rs1, src1_value)}${srcStr(2, rs2_valid, rs2, src2_value)}\n` +
+                   `      ${immStr(imm_valid.asBool(false), imm.asBinaryStr("0"))}`;
+         let instrWithValues = new fabric.Text(str, {
+            top: 70,
+            left: 65,
+            fill: "blue",
+            fontSize: 14,
+            fontFamily: "monospace",
+            visible: instr != sticky_zero
+         })
+         
+         
+         // Animate fetch (and provide onChange behavior for other animation).
+         
+         let fetch_instr_str = siggen(`instr_strs(${pc.asInt() >> 2})`, `instr_strs(${pc.asInt() >> 2})`).asString("(?) UNKNOWN fetch instr").substr(4)
+         let fetch_instr_viz = new fabric.Text(fetch_instr_str, {
+            top: M4_IMEM_TOP + 18 * (pc.asInt() >> 2),
+            left: -352 + 8 * 4,
+            fill: "black",
+            fontSize: 14,
+            fontFamily: "monospace",
+            visible: instr != sticky_zero
+         })
+         fetch_instr_viz.animate({top: 32, left: 10}, {
+              onChange: this.global.canvas.renderAll.bind(this.global.canvas),
+              duration: 500
+         })
+         
+         // Animate RF value read/write.
+         
+         let src1_value_viz = new fabric.Text(src1_value.asInt(0).toString(M4_VIZ_BASE), {
+            left: 316 + 8 * 4,
+            top: 18 * rs1.asInt(0) - 40,
+            fill: "blue",
+            fontSize: 14,
+            fontFamily: "monospace",
+            fontWeight: 800,
+            visible: (src1_value != sticky_zero) && rs1_valid.asBool(false)
+         })
+         setTimeout(() => {src1_value_viz.animate({left: 166, top: 70 + 18 * 2}, {
+              onChange: this.global.canvas.renderAll.bind(this.global.canvas),
+              duration: 500
+         })}, 500)
+         let src2_value_viz = new fabric.Text(src2_value.asInt(0).toString(M4_VIZ_BASE), {
+            left: 316 + 8 * 4,
+            top: 18 * rs2.asInt(0) - 40,
+            fill: "blue",
+            fontSize: 14,
+            fontFamily: "monospace",
+            fontWeight: 800,
+            visible: (src2_value != sticky_zero) && rs2_valid.asBool(false)
+         })
+         setTimeout(() => {src2_value_viz.animate({left: 166, top: 70 + 18 * 3}, {
+              onChange: this.global.canvas.renderAll.bind(this.global.canvas),
+              duration: 500
+         })}, 500)
+         
+         let load_viz = new fabric.Text(ld_data.asInt(0).toString(M4_VIZ_BASE), {
+            left: 470,
+            top: 18 * dmem_addr.asInt() + 6 - 40,
+            fill: "blue",
+            fontSize: 14,
+            fontFamily: "monospace",
+            fontWeight: 1000,
+            visible: false
+         })
+         if (dmem_rd_en.asBool()) {
+            setTimeout(() => {
+               load_viz.set({visible: true})
+               load_viz.animate({left: 146, top: 70}, {
+                 onChange: this.global.canvas.renderAll.bind(this.global.canvas),
+                 duration: 500
+               })
+               setTimeout(() => {
+                  load_viz.set({visible: false})
+                  }, 500)
+            }, 500)
+         }
+         
+         let store_viz = new fabric.Text(src2_value.asInt(0).toString(M4_VIZ_BASE), {
+            left: 166,
+            top: 70 + 18 * 3,
+            fill: "blue",
+            fontSize: 14,
+            fontFamily: "monospace",
+            fontWeight: 1000,
+            visible: false
+         })
+         if (dmem_wr_en.asBool()) {
+            setTimeout(() => {
+               store_viz.set({visible: true})
+               store_viz.animate({left: 515, top: 18 * dmem_addr.asInt() - 40}, {
+                 onChange: this.global.canvas.renderAll.bind(this.global.canvas),
+                 duration: 500
+               })
+            }, 1000)
+         }
+         
+         let result_shadow = new fabric.Text(result.asInt(0).toString(M4_VIZ_BASE), {
+            left: 146,
+            top: 70,
+            fill: "#b0b0df",
+            fontSize: 14,
+            fontFamily: "monospace",
+            fontWeight: 800,
+            visible: false
+         })
+         let result_viz = new fabric.Text(rf_wr_data.asInt(0).toString(M4_VIZ_BASE), {
+            left: 146,
+            top: 70,
+            fill: "blue",
+            fontSize: 14,
+            fontFamily: "monospace",
+            fontWeight: 800,
+            visible: false
+         })
+         if (rd_valid.asBool()) {
+            setTimeout(() => {
+               result_viz.set({visible: rf_wr_data != sticky_zero && rf_wr_en.asBool()})
+               result_shadow.set({visible: result != sticky_zero})
+               result_viz.animate({left: 317 + 8 * 4, top: 18 * rf_wr_index.asInt(0) - 40}, {
+                 onChange: this.global.canvas.renderAll.bind(this.global.canvas),
+                 duration: 500
+               })
+            }, 1000)
+         }
+         
+         // Lab completion
+         
+         // Passed?
+         this.getObjects().passed.set({visible: false})
+         if (passed) {
+           if (passed.step(-1).asBool()) {
+             this.getObjects().passed.set({visible: true, text:"Passed !!!", fill: "green"})
+           } else {
+             // Using an unstable API, so:
+             try {
+               passed.goToSimEnd().step(-1)
+               if (passed.asBool()) {
+                  this.getObjects().passed.set({text:"Sim Passes", visible: true, fill: "lightgray"})
+               }
+             } catch(e) {
+             }
+           }
+         }
+         
+         // Missing signals
+         if (missing_list[0]) {
+            this.getObjects().missing_sigs.set({visible: true})
+            this.missing_col1.set({text: missing_list[0]})
+            this.missing_col2.set({text: missing_list[1]})
+         }
+         return [pcPointer, pc_arrow, ...type_texts, rs1_arrow, rs2_arrow, rd_arrow, instrWithValues, fetch_instr_viz, src1_value_viz, src2_value_viz, result_shadow, result_viz, ld_arrow, st_arrow, load_viz, store_viz]
+      }
+      
+   /imem[m4_eval(M4_NUM_INSTRS-1):0]
+      \viz_js
+         box: {width: 630, height: 18, strokeWidth: 0},
+         init() {
+           let binary = new fabric.Text("", {
+              top: 0,
+              left: 0,
+              fontSize: 14,
+              fontFamily: "monospace",
+         
+           })
+           let disassembled = new fabric.Text("", {
+              top: 0,
+              left: 330,
+              fontSize: 14,
+              fontFamily: "monospace"
+           })
+           return {binary, disassembled}
+         },
+         onTraceData() {
+            let instr = this.svSigRef(`instrs(${this.getIndex()})`)
+            if (instr) {
+               let binary_str = instr.goToSimStart().asBinaryStr("")
+               this.getObjects().binary.set({text: binary_str})
+            }
+            let disassembled = this.svSigRef(`instr_strs(${this.getIndex()})`)
+            if (disassembled) {
+               let disassembled_str = disassembled.goToSimStart().asString("")
+               disassembled_str = disassembled_str.slice(0, -5)
+               this.getObjects().disassembled.set({text: disassembled_str})
+            }
+         },
+         render() {
+            // Instruction memory is constant, so just create it once.
+            let reset = this.svSigRef(`L0_reset_a0`)
+            let pc = this.svSigRef(`L0_pc_a0`)
+            let rd_viz = pc && !reset.asBool() && (pc.asInt() >> 2) == this.getIndex()
+            this.getObjects().disassembled.set({textBackgroundColor: rd_viz ? "#b0ffff" : "white"})
+            this.getObjects().binary      .set({textBackgroundColor: rd_viz ? "#b0ffff" : "white"})
+         },
+         where: {left: -680, top: M4_IMEM_TOP}
       
 \TLV tb()
    $passed_cond = (/xreg[30]$value == 32'b1) &&
@@ -755,8 +749,8 @@ m4+definitions(['
    m4_asm(BGE, x0, x0, 0) // Done. Jump to itself (infinite loop). (Up to 20-bit signed immediate plus implicit 0 bit (unlike JALR) provides byte address; last immediate bit should also be 0)
    m4_asm_end_tlv()
    m4_define(['M4_MAX_CYC'], 40)
-
-
+  
+  
 // ^===================================================================^
 
 \SV
