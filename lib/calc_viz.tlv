@@ -190,7 +190,7 @@
             let sticky_zero = this.svSigRef(`sticky_zero`);
             getSig = (name) => {
                let sig = this.svSigRef(`L0_${name}_a0`);
-               if (sig == null) {
+               if (sig == null || !sig.exists()) {
                   missing_list += `◾ $${name}      \n`;
                   sig         = sticky_zero;
                }

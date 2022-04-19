@@ -145,8 +145,10 @@ m4+definitions(['
       \viz_js
          box: {width: 120, height: 18, strokeWidth: 0},
          render() {
-            siggen = (name) => this.svSigRef(`${name}`) == null ? this.svSigRef(`sticky_zero`) : this.svSigRef(`${name}`);
-            
+            let siggen = (name) => {
+               let sig = this.svSigRef(`${name}`)
+               sig == null || !sig.exists() ? this.svSigRef(`sticky_zero`) : this.svSigRef(`${name}`);
+            }
             let rf_rd_en1 = siggen(`L0_rf1_rd_en1_a0`)
             let rf_rd_index1 = siggen(`L0_rf1_rd_index1_a0`)
             let rf_rd_en2 = siggen(`L0_rf1_rd_en2_a0`)
@@ -201,7 +203,10 @@ m4+definitions(['
       \viz_js
          box: {width: 120, height: 18, strokeWidth: 0},
          render() {
-            siggen = (name) => this.svSigRef(`${name}`) == null ? this.svSigRef(`sticky_zero`) : this.svSigRef(`${name}`);
+            let siggen = (name) => {
+               let sig = this.svSigRef(`${name}`)
+               sig == null || !sig.exists() ? this.svSigRef(`sticky_zero`) : this.svSigRef(`${name}`);
+            }
             //
             let dmem_rd_en = siggen(`L0_dmem1_rd_en_a0`);
             let dmem_addr = siggen(`L0_dmem1_addr_a0`);
@@ -372,9 +377,9 @@ m4+definitions(['
          var missing_cnt = 0
          let sticky_zero = this.svSigRef(`sticky_zero`);  // A default zero-valued signal.
          // Attempt to look up a signal, using sticky_zero as default and updating missing_list if expected.
-         siggen = (name, full_name, expected = true) => {
+         let siggen = (name, full_name, expected = true) => {
             var sig = this.svSigRef(full_name ? full_name : `L0_${name}_a0`)
-            if (sig == null) {
+            if (sig == null || !sig.exists()) {
                sig         = sticky_zero;
                if (expected) {
                   missing_list[missing_cnt > 11 ? 1 : 0] += `◾ $${name}      \n`;
@@ -393,7 +398,7 @@ m4+definitions(['
             let instrs = ["lui", "auipc", "jal", "jalr", "beq", "bne", "blt", "bge", "bltu", "bgeu", "lb", "lh", "lw", "lbu", "lhu", "sb", "sh", "sw", "addi", "slti", "sltiu", "xori", "ori", "andi", "slli", "srli", "srai", "add", "sub", "sll", "slt", "sltu", "xor", "srl", "sra", "or", "and", "csrrw", "csrrs", "csrrc", "csrrwi", "csrrsi", "csrrci", "load", "s_instr"];
             for(i=0;i<instrs.length;i++) {
                var sig = this.svSigRef(`L0_is_${instrs[i]}_a0`)
-               if(sig != null && sig.asBool()) {
+               if(sig != null && sig.asBool(false)) {
                   return instrs[i].toUpperCase()
                }
             }
