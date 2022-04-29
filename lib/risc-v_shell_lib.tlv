@@ -147,7 +147,7 @@ m4+definitions(['
          render() {
             let siggen = (name) => {
                let sig = this.svSigRef(`${name}`)
-               sig == null || !sig.exists() ? this.svSigRef(`sticky_zero`) : this.svSigRef(`${name}`);
+               return (sig == null || !sig.exists()) ? this.svSigRef(`sticky_zero`) : sig;
             }
             let rf_rd_en1 = siggen(`L0_rf1_rd_en1_a0`)
             let rf_rd_index1 = siggen(`L0_rf1_rd_index1_a0`)
@@ -205,7 +205,7 @@ m4+definitions(['
          render() {
             let siggen = (name) => {
                let sig = this.svSigRef(`${name}`)
-               sig == null || !sig.exists() ? this.svSigRef(`sticky_zero`) : this.svSigRef(`${name}`);
+               return (sig == null || !sig.exists()) ? this.svSigRef(`sticky_zero`) : sig;
             }
             //
             let dmem_rd_en = siggen(`L0_dmem1_rd_en_a0`);
