@@ -153,7 +153,6 @@ m4+definitions(['
             let rf_rd_index1 = siggen(`L0_rf1_rd_index1_a0`)
             let rf_rd_en2 = siggen(`L0_rf1_rd_en2_a0`)
             let rf_rd_index2 = siggen(`L0_rf1_rd_index2_a0`)
-            let rf_wr_index = siggen(`rf1_wr_index_a0`)
             let wr = siggen(`L1_Xreg[${this.getIndex()}].L1_wr_a0`)
             let value = siggen(`Xreg_value_a0(${this.getIndex()})`)
             
