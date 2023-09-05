@@ -709,6 +709,10 @@ m4+definitions(['
                this.getObjects().binary.set({text: binary_str})
             }
             let disassembled = this.svSigRef(`instr_strs(${this.getIndex()})`)
+            if (!disassembled) {
+               // It seems the new convention in Verilator is to use [], not ().
+               let disassembled = this.svSigRef(`instr_strs[${this.getIndex()}]`)
+            }
             if (disassembled) {
                let disassembled_str = disassembled.goToSimStart().asString("")
                disassembled_str = disassembled_str.slice(0, -5)
