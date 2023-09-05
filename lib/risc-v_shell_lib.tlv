@@ -702,7 +702,7 @@ m4+definitions(['
             let instr = this.svSigRef(`instrs(${this.getIndex()})`)
             if (!instr) {
                // It seems the new convention in Verilator is to use [], not ().
-               let instr = this.svSigRef(`instrs[${this.getIndex()}]`)
+               instr = this.svSigRef(`instrs[${this.getIndex()}]`)
             }
             if (instr) {
                let binary_str = instr.goToSimStart().asBinaryStr("")
@@ -711,7 +711,7 @@ m4+definitions(['
             let disassembled = this.svSigRef(`instr_strs(${this.getIndex()})`)
             if (!disassembled) {
                // It seems the new convention in Verilator is to use [], not ().
-               let disassembled = this.svSigRef(`instr_strs[${this.getIndex()}]`)
+               disassembled = this.svSigRef(`instr_strs[${this.getIndex()}]`)
             }
             if (disassembled) {
                let disassembled_str = disassembled.goToSimStart().asString("")
