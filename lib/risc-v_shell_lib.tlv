@@ -700,6 +700,10 @@ m4+definitions(['
          },
          onTraceData() {
             let instr = this.svSigRef(`instrs(${this.getIndex()})`)
+            if (!instr) {
+               // It seems the new convention in Verilator is to use [], not ().
+               let instr = this.svSigRef(`instrs[${this.getIndex()}]`)
+            }
             if (instr) {
                let binary_str = instr.goToSimStart().asBinaryStr("")
                this.getObjects().binary.set({text: binary_str})
