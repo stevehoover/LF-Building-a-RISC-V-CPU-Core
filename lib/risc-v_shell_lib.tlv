@@ -699,19 +699,19 @@ m4+definitions(['
            return {binary, disassembled}
          },
          onTraceData() {
-            let instr = this.svSigRef(`instrs(${this.getIndex()})`)
+            let instr = this.svSigRef(`instrs[${this.getIndex()}]`)
             if (!instr) {
-               // It seems the new convention in Verilator is to use [], not ().
-               instr = this.svSigRef(`instrs[${this.getIndex()}]`)
+               // Previously, Verilator used (), not []. This should no longer be needed, but, just in case:
+               instr = this.svSigRef(`instrs(${this.getIndex()})`)
             }
             if (instr) {
                let binary_str = instr.goToSimStart().asBinaryStr("")
                this.getObjects().binary.set({text: binary_str})
             }
-            let disassembled = this.svSigRef(`instr_strs(${this.getIndex()})`)
+            let disassembled = this.svSigRef(`instr_strs[${this.getIndex()}]`)
             if (!disassembled) {
-               // It seems the new convention in Verilator is to use [], not ().
-               disassembled = this.svSigRef(`instr_strs[${this.getIndex()}]`)
+               // Previously, Verilator used (), not []. This should no longer be needed, but, just in case:
+               disassembled = this.svSigRef(`instr_strs(${this.getIndex()})`)
             }
             if (disassembled) {
                let disassembled_str = disassembled.goToSimStart().asString("")
