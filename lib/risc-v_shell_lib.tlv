@@ -538,7 +538,7 @@ m4+definitions(['
          
          // Animate fetch (and provide onChange behavior for other animation).
          
-         let fetch_instr_str = siggen(`instr_strs(${pc.asInt() >> 2})`, `instr_strs(${pc.asInt() >> 2})`).asString("(?) UNKNOWN fetch instr").substr(4)
+         let fetch_instr_str = siggen(`instr_strs[${pc.asInt() >> 2}]`, `instr_strs[${pc.asInt() >> 2}]`).asString("(?) UNKNOWN fetch instr").substr(4)
          let fetch_instr_viz = new fabric.Text(fetch_instr_str, {
             top: M4_IMEM_TOP + 18 * (pc.asInt() >> 2),
             left: -352 + 8 * 4,
