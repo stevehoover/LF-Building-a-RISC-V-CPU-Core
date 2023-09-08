@@ -154,7 +154,7 @@ m4+definitions(['
             let rf_rd_en2 = siggen(`L0_rf1_rd_en2_a0`)
             let rf_rd_index2 = siggen(`L0_rf1_rd_index2_a0`)
             let wr = siggen(`L1_Xreg[${this.getIndex()}].L1_wr_a0`)
-            let value = siggen(`Xreg_value_a0(${this.getIndex()})`)
+            let value = siggen(`Xreg_value_a0[${this.getIndex()}]`)
             
             let rd = (rf_rd_en1.asBool(false) && rf_rd_index1.asInt() == this.getIndex()) || 
                      (rf_rd_en2.asBool(false) && rf_rd_index2.asInt() == this.getIndex())
@@ -211,7 +211,7 @@ m4+definitions(['
             let dmem_addr = siggen(`L0_dmem1_addr_a0`);
             //
             let wr = siggen(`L1_Dmem[${this.getIndex()}].L1_wr_a0`);
-            let value = siggen(`Dmem_value_a0(${this.getIndex()})`);
+            let value = siggen(`Dmem_value_a0[${this.getIndex()}]`);
             //
             let rd = dmem_rd_en.asBool() && dmem_addr.asInt() == this.getIndex();
             let mod = wr.asBool(false);
