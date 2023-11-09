@@ -18,7 +18,7 @@
    var(EXT_Q, 0)
    var(EXT_A, 0)
    var(WORD_CNT, 32)
-m4+definitions(['
+\m4
    // Define full test program.
    // Provide a non-empty argument if this is instantiated within a \TLV region (vs. \SV).
    m4_define(['m4_test_prog'], ['m4_hide(['
@@ -95,7 +95,7 @@ m4+definitions(['
      // JAL:
      m4_asm(JAL, x25, 10)     // x25 = PC of next instr
      m4_asm(AUIPC, x4, 0)     // x4 = PC
-     m4_asm(XOR, x25, x25, x4)  # AUIPC and JAR results are the same.
+     m4_asm(XOR, x25, x25, x4)  // AUIPC and JAR results are the same.
      m4_asm(XORI, x25, x25, 1)
      // JALR:
      m4_asm(JALR, x26, x4, 10000)
@@ -116,15 +116,15 @@ m4+definitions(['
 
      m4_define(['M4_NUM_INSTRS'], m5_get(NUM_INSTRS))
      m4_define(['M4_MAX_CYC'], 70)
-     '])m4_ifelse(['$1'], [''], ['m5_asm_end()'], ['m4_asm_end_tlv()'])'])
+     m4_ifelse(['$1'], [''], ['m5_asm_end()'], ['m4_asm_end_tlv()'])'])'])
    
    m4_echo(m4tlv_riscv_gen__body())
    
    // A single-line M4 macro instantiated at the end of the asm code.
    // It actually produces a definition of an SV macro that instantiates the IMem conaining the program (that can be parsed without \SV_plus). 
-   m5_macro(asm_end, ['`define READONLY_MEM(ADDR, DATA) logic [31:0] instrs [0:m5_NUM_INSTRS-1]; assign DATA = instrs[ADDR[$clog2($size(instrs)) + 1 : 2]]; assign instrs = '{m4_echo(m4_echo(m5_instr0))m5_repeat(m5_calc(m5_NUM_INSTRS-1), [', m4_echo(m4_echo(m5_get(['instr']m5_LoopCnt)))'])};'])
    m4_define(['m4_asm_end_tlv'], ['`define READONLY_MEM(ADDR, DATA) logic [31:0] instrs [0:M4_NUM_INSTRS-1]; assign DATA \= instrs[ADDR[\$clog2(\$size(instrs)) + 1 : 2]]; assign instrs \= '{m4_instr0['']m4_forloop(['m4_instr_ind'], 1, M4_NUM_INSTRS, [', m4_echo(['m4_instr']m4_instr_ind)'])};'])
-'])
+\m5
+   macro(asm_end, ['`define READONLY_MEM(ADDR, DATA) logic [31:0] instrs [0:m5_get(NUM_INSTRS)-1]; assign DATA = instrs[ADDR[$clog2($size(instrs)) + 1 : 2]]; assign instrs = '{m4_echo(m5_instr0)m5_repeat(m5_calc(m5_NUM_INSTRS-1), ['[', ']m4_echo(m5_get(['instr']m5_LoopCnt))'])};'])
 
 \TLV test_prog()
    m4_test_prog(['TLV'])
