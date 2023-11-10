@@ -18,6 +18,13 @@
    var(EXT_Q, 0)
    var(EXT_A, 0)
    var(WORD_CNT, 32)
+   
+   fn(assemble_imem, code, {
+      nullify(m5_assemble(m5_code))
+      eval(['m4_define(['M4_NUM_INSTRS'], m5_NUM_INSTRS)'])
+      eval(['m4_define(['M4_MAX_CYC'], 70)'])
+      universal_var(my_defs, m5_asm_end())
+   })
 \m4
    // Define full test program.
    // Provide a non-empty argument if this is instantiated within a \TLV region (vs. \SV).
