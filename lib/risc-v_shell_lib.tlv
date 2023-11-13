@@ -131,7 +131,7 @@
    // It actually produces a definition of an SV macro that instantiates the IMem conaining the program (that can be parsed without \SV_plus). 
    m4_define(['m4_asm_end_tlv'], ['`define READONLY_MEM(ADDR, DATA) logic [31:0] instrs [0:M4_NUM_INSTRS-1]; assign DATA \= instrs[ADDR[\$clog2(\$size(instrs)) + 1 : 2]]; assign instrs \= '{m4_instr0['']m4_forloop(['m4_instr_ind'], 1, M4_NUM_INSTRS, [', m4_echo(['m4_instr']m4_instr_ind)'])};'])
 \m5
-   macro(asm_end, ['`define READONLY_MEM(ADDR, DATA) logic [31:0] instrs [0:m5_get(NUM_INSTRS)-1]; assign DATA = instrs[ADDR[$clog2($size(instrs)) + 1 : 2]]; assign instrs = '{m4_echo(m5_instr0)m5_repeat(m5_calc(m5_NUM_INSTRS-1), ['[', ']m4_echo(m5_get(['instr']m5_LoopCnt))'])};'])
+   macro(asm_end, ['`define READONLY_MEM(ADDR, DATA) logic [31:0] instrs [0:m5_get(NUM_INSTRS)-1]; assign DATA = instrs[ADDR[$clog2($size(instrs)) + 1 : 2]]; assign instrs = '{m4_echo(m5_instr0)m5_repeat(m5_calc(m5_NUM_INSTRS-1), ['[', ']m4_echo(m5_get(['instr']m5_calc(m5_LoopCnt + 1)))'])};'])
 
 \TLV test_prog()
    m4_test_prog(['TLV'])
