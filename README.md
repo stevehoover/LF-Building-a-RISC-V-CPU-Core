@@ -16,7 +16,7 @@ This course is available [in this repository](https://github.com/stevehoover/LF-
 
 Congratulations for taking this step to expand your knowledge of computer hardware.
 
-At this time, there are no course corrections or platform issues to report. Please do let us know within the EdX platform if anything gets in your way. There's a great deal of infrastructure to maintain for the course, and we aim to keep it all running smoothly. Now, please head back to [EdX](https://www.edx.org/course/building-a-risc-v-cpu-core) or the [Markdown version](course.md) of this course and continue.
+At this time, there are no course corrections or platform issues to report. Please do let us know within the EdX platform if anything gets in your way. There's a great deal of infrastructure to maintain for the course, and we aim to keep it all running smoothly. Now, please head back to [EdX](https://www.edx.org/course/building-a-risc-v-cpu-core) or the [Markdown version](https://github.com/stevehoover/LF-Building-a-RISC-V-CPU-Core-Course/blob/main/course.md) of this course and continue.
 
 ## RISC-V Starting-Point Code
 
