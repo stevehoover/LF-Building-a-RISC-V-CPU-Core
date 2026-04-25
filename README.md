@@ -43,4 +43,4 @@ After completing this course, we hope you are inspired to continue your journey.
   - Get your core running on real hardware using FPGAs [in the cloud](https://github.com/stevehoover/1st-CLaaS) or [on your desktop](https://github.com/shivanishah269/risc-v-core/).
   - Install [TL-Verilog tools](https://www.redwoodeda.com/products).
   - Learn about the [WARP-V](https://github.com/stevehoover/warp-v) TL-Verilog CPU core generator.
-  - LLMs, start your learning [here](https://gitlab.com/rweda/Makerchip-public).
+  - LLMs, start your learning [here](https://github.com/rweda/Makerchip-public).
