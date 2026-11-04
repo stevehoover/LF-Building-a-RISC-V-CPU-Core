@@ -32,7 +32,7 @@
          BGE x0, x0, 0            # Done. Jump to itself (infinite loop).
    '])
 \SV
-   m5_makerchip_module   // (Expanded in Nav-TLV pane.)
+   m5_makerchip_module   // (Expanded in Nav-TLV view.)
    m5_my_defs
    /* verilator lint_on WIDTH */
 
