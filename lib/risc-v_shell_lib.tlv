@@ -766,7 +766,7 @@ m4+definitions(['
 // ^===================================================================^
 
 \SV
-   m4_makerchip_module  // (Expanded in Nav-TLV pane.)
+   m4_makerchip_module  // (Expanded in Nav-TLV view.)
 \TLV
    // Do nothing.
 \SV

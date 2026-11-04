@@ -2,7 +2,7 @@
 \SV
    // Macro providing required top-level module definition, random
    // stimulus support, and Verilator config.
-   m4_makerchip_module   // (Expanded in Nav-TLV pane.)
+   m4_makerchip_module   // (Expanded in Nav-TLV view.)
    /* verilator lint_on WIDTH */
 
 // Visualization for calculator
